@@ -1,0 +1,21 @@
+Package: mvTweedie
+Type: Package
+Title: Fit multivariate logit Tweedie model using mgcv or glmmTMB
+Version: 1.0
+Date: 2021-02-23
+Authors@R: 
+    c(person(given = "James",
+             family = "Thorson",
+             role = c("aut", "cre"),
+             email = "James.Thorson@noaa.gov",
+             comment = c(ORCID = "0000-0001-7415-1010"))
+    )
+Description: Defines predict function that transforms output from a Tweedie GLM 
+    fitted using mgcv or glmmTMB, and returns predictions of an equivalent 
+    multivariate logit Tweedie model.  This can then be used for standard plotting
+    and diagnostics. 
+Imports:
+    mgcv,
+    glmmTMB,
+    ggplot2
+License: What license is it under?
