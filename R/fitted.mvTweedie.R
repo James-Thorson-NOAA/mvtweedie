@@ -1,3 +1,6 @@
+
+#' @method fitted mvTweedie
+#' @export
 fitted.mvTweedie <-
 function(x,
                   ... )

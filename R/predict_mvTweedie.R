@@ -1,3 +1,11 @@
+
+#' Get predictions from a multivariate logit interpretation of a Tweedie GLM
+#'
+#' It returns a tibble with predicted proportions from a Tweedie GAM model.
+#'
+#' The created tibble can then be plotted using \code{ggplot2}
+#'
+#' @export
 predict_mvTweedie <-
 function(
                  model,
@@ -34,6 +42,7 @@ function(
     names(term_list)[term] <- term_name
   }
   new_data <- expand.grid(term_list)
+  class(model) = c( "mvTweedie", class(model) )
   pred <- predict( model,
                    new_data,
                    se.fit = TRUE,

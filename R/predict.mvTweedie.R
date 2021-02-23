@@ -1,3 +1,19 @@
+
+#' Predict proportions for new data
+#'
+#' Predict proportions and associated standard errors using a standard S3 object interface
+#'
+#' A Tweedie GLM using a log-link and multiple categories can be
+#' transformed to yield predicted proportions and associated SEs, where the
+#' model is interpreted as a multivariate logit Tweedie distribution. This function
+#' does this transformation for a model fitted using:
+#' \itemize{
+#' \item A gam using \code{\link[mgcv]{gam}}
+#' \item A GLMM using \code{\link[glmmTMB]{glmmTMB}}
+#' }
+#'
+#' @method predict mvTweedie
+#' @export
 predict.mvTweedie <-
 function(x,
 #                  original_class = "glmmTMB",

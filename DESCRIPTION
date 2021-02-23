@@ -19,3 +19,4 @@ Imports:
     glmmTMB,
     ggplot2
 License: What license is it under?
+RoxygenNote: 7.1.1
