@@ -4,7 +4,27 @@
 \alias{predict.mvTweedie}
 \title{Predict proportions for new data}
 \usage{
-\method{predict}{mvTweedie}(x, newdata, origdata = x$frame, se.fit = FALSE)
+\method{predict}{mvTweedie}(
+  x,
+  category_name = "group",
+  newdata,
+  origdata = x$frame,
+  se.fit = FALSE
+)
+}
+\arguments{
+\item{x}{output from \code{\link[mgcv]{gam}} or \code{\link[glmmTMB]{glmmTMB}}, but with
+\code{class(x)=c("mvTweedie",...)} where \code{...} indicates the original values for
+\code{class(x)}}
+
+\item{category_name}{name of column that indicates grouping variable}
+
+\item{newdata}{An optional data frame in which to look for variables with
+    which to predict.  If omitted, the fitted values are used.}
+
+\item{origdata}{original data used when fitting}
+
+\item{se.fit}{A switch indicating if standard errors are required.}
 }
 \description{
 Predict proportions and associated standard errors using a standard S3 object interface
@@ -15,7 +35,8 @@ transformed to yield predicted proportions and associated SEs, where the
 model is interpreted as a multivariate logit Tweedie distribution. This function
 does this transformation for a model fitted using:
 \itemize{
-\item A gam using \code{\link[mgcv]{gam}}
-\item A GLMM using \code{\link[glmmTMB]{glmmTMB}}
+\item A generalized additive model (GAM) using \code{\link[mgcv]{gam}}
+\item A generalized linear mixed model (GLMM) using \code{\link[glmmTMB]{glmmTMB}}
 }
+It then also calculates an approximation to the standard error for this proportion
 }
