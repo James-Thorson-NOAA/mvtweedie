@@ -14,6 +14,9 @@ function(
                  values = NULL,
                  ... )
 {
+  if( !any(c("gam","glmmTMB") %in% class(x)) ){
+    stop("`predict_mvTweedie` only implemented for mgcv and glmmTMB")
+  }
   n_terms <- length(model[["var.summary"]])
   term_list <- list()
   for (term in 1:n_terms) {
@@ -44,7 +47,7 @@ function(
   new_data <- expand.grid(term_list)
   class(model) = c( "mvTweedie", class(model) )
   pred <- predict( model,
-                   new_data,
+                   newdata = new_data,
                    se.fit = TRUE,
                    #original_class = c("gam","glm","lm"),
                    ...)

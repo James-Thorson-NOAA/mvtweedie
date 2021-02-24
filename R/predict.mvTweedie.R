@@ -32,9 +32,14 @@ function(x,
                   se.fit = FALSE )
 {
   # Error checks
-  if( tolower(substr(family(x)$family,1,7)) != "tweedie" ) error("`predict.mvTweedie` only implemented for a Tweedie distribution")
-  if( family(x)$link != "log" ) error("`predict.mvTweedie` only implemented for a log link")
-  if( se.fit==TRUE & "fit_model"%in%class(x) ) error("se.fit not implemented for predict using VAST")
+  if( any(c("gam","glmmTMB") %in% class(x)) ){
+    if( tolower(substr(family(x)$family,1,7)) != "tweedie" ) error("`predict.mvTweedie` only implemented for a Tweedie distribution")
+    if( family(x)$link != "log" ) error("`predict.mvTweedie` only implemented for a log link")
+  }else if( "fit_model"%in%class(x) ){
+    if( se.fit==TRUE ) error("se.fit not implemented for predict using VAST")
+  }else{
+    stop("`predict.mvTweedie` only implemented for mgcv, glmmTMB and VAST")
+  }
 
   # Defaults
   if(missing(newdata) || is.null(newdata)) newdata = origdata
@@ -64,7 +69,7 @@ function(x,
                    v_i=x$data_frame[,'v_i'] )
     }else{
       pred = predict(x,
-                   newdata=data,
+                   newdata = data,
                    type="response",
                    se.fit = se.fit )
       if( se.fit==TRUE ){
