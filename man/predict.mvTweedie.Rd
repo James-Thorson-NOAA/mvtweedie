@@ -40,3 +40,22 @@ does this transformation for a model fitted using:
 }
 It then also calculates an approximation to the standard error for this proportion
 }
+\examples{
+\dontrun{
+# Load packages
+library(mvTweedie)
+
+# load data set
+data( Middleton_Island_TUPU, package="mvTweedie" )
+DF = Middleton_Island_TUPU
+
+# Run Tweedie GLM
+gam0 = gam( formula = Response ~ 0 + group, data = DF, family = tw )
+
+# Inspect results
+class(gam0) = c( "mvTweedie", class(gam0) )
+predict(gam0, se.fit=TRUE, origdata = DF)
+}
+
+
+}

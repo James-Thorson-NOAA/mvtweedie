@@ -14,7 +14,7 @@ function(
                  values = NULL,
                  ... )
 {
-  if( !any(c("gam","glmmTMB") %in% class(x)) ){
+  if( !any(c("gam","glmmTMB") %in% class(model)) ){
     stop("`predict_mvTweedie` only implemented for mgcv and glmmTMB")
   }
   n_terms <- length(model[["var.summary"]])
