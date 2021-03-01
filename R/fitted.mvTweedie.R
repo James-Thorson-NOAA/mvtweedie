@@ -1,7 +1,7 @@
 
-#' @method fitted mvTweedie
+#' @method fitted mvtweedie
 #' @export
-fitted.mvTweedie <-
+fitted.mvtweedie <-
 function(x,
                   ... )
 {

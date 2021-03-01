@@ -15,7 +15,7 @@
 #'
 #' @inheritParams stats::predict.lm
 #' @param x output from \code{\link[mgcv]{gam}} or \code{\link[glmmTMB]{glmmTMB}}, but with
-#'    \code{class(x)=c("mvTweedie",...)} where \code{...} indicates the original values for
+#'    \code{class(x)=c("mvtweedie",...)} where \code{...} indicates the original values for
 #'    \code{class(x)}
 #' @param category_name name of column that indicates grouping variable
 #' @param origdata original data used when fitting
@@ -23,24 +23,24 @@
 #' @examples
 #' \dontrun{
 #' # Load packages
-#' library(mvTweedie)
+#' library(mvtweedie)
 #'
 #' # load data set
-#' data( Middleton_Island_TUPU, package="mvTweedie" )
+#' data( Middleton_Island_TUPU, package="mvtweedie" )
 #' DF = Middleton_Island_TUPU
 #'
 #' # Run Tweedie GLM
 #' gam0 = gam( formula = Response ~ 0 + group, data = DF, family = tw )
 #'
 #' # Inspect results
-#' class(gam0) = c( "mvTweedie", class(gam0) )
+#' class(gam0) = c( "mvtweedie", class(gam0) )
 #' predict(gam0, se.fit=TRUE, origdata = DF)
 #' }
 #'
 #'
-#' @method predict mvTweedie
+#' @method predict mvtweedie
 #' @export
-predict.mvTweedie <-
+predict.mvtweedie <-
 function(x,
 #                  original_class = "glmmTMB",
                   category_name = "group",
@@ -50,12 +50,12 @@ function(x,
 {
   # Error checks
   if( any(c("gam","glmmTMB") %in% class(x)) ){
-    if( tolower(substr(family(x)$family,1,7)) != "tweedie" ) error("`predict.mvTweedie` only implemented for a Tweedie distribution")
-    if( family(x)$link != "log" ) error("`predict.mvTweedie` only implemented for a log link")
+    if( tolower(substr(family(x)$family,1,7)) != "tweedie" ) error("`predict.mvtweedie` only implemented for a Tweedie distribution")
+    if( family(x)$link != "log" ) error("`predict.mvtweedie` only implemented for a log link")
   }else if( "fit_model"%in%class(x) ){
     if( se.fit==TRUE ) error("se.fit not implemented for predict using VAST")
   }else{
-    stop("`predict.mvTweedie` only implemented for mgcv, glmmTMB and VAST")
+    stop("`predict.mvtweedie` only implemented for mgcv, glmmTMB and VAST")
   }
 
   # Defaults
@@ -70,7 +70,7 @@ function(x,
     data[,category_name] = factor( levels(origdata[,category_name])[cI], levels=levels(origdata[,category_name]) )
 
     # Modify class
-    class(x) = setdiff( class(x), "mvTweedie" )
+    class(x) = setdiff( class(x), "mvtweedie" )
     #class(x) = original_class
 
     # Apply predict.original_class

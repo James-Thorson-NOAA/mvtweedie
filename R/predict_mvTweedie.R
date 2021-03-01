@@ -6,7 +6,7 @@
 #' The created tibble can then be plotted using \code{ggplot2}
 #'
 #' @export
-predict_mvTweedie <-
+predict_mvtweedie <-
 function(
                  model,
                  exclude_terms = NULL,
@@ -15,7 +15,7 @@ function(
                  ... )
 {
   if( !any(c("gam","glmmTMB") %in% class(model)) ){
-    stop("`predict_mvTweedie` only implemented for mgcv and glmmTMB")
+    stop("`predict_mvtweedie` only implemented for mgcv and glmmTMB")
   }
   n_terms <- length(model[["var.summary"]])
   term_list <- list()
@@ -45,7 +45,7 @@ function(
     names(term_list)[term] <- term_name
   }
   new_data <- expand.grid(term_list)
-  class(model) = c( "mvTweedie", class(model) )
+  class(model) = c( "mvtweedie", class(model) )
   pred <- predict( model,
                    newdata = new_data,
                    se.fit = TRUE,

@@ -1,4 +1,4 @@
-Package: mvTweedie
+Package: mvtweedie
 Type: Package
 Title: Fit multivariate logit Tweedie model using mgcv or glmmTMB
 Version: 1.0
