@@ -1,5 +1,8 @@
-# mvTweedie
-Interpret output from a Tweedie GLM as a multivariate logit Tweedie model
+# mvtweedie
+An R package to interpret a Tweedie generalized linear model (GLM) or generalized additive model (GAM) involving multiple classes as an estimate of proportions for each class, implicitly involving a multivariate-logit transformation for parameters and predictions.  This approach generalizes the Poisson-to-multinomial transformation to allow for non-integer responses, and can analyze either pre-processed (transformed to proportions) or raw (zero-inflated positive real values) data.
+
+This approach is helpful, e.g., when analyzing diet samples that are heavily zero inflated without pre-processing the samples prior to analysis.  In these cases, the Tweedie distribution can be interpreted mechanistically as a thinned and double-marked Poisson point process representing foraging processes.
+
 
 ### Demo
 
@@ -36,3 +39,7 @@ ggplot(newdata, aes(Year, fit)) +
   ylim(0,1) +
   labs(y="Predicted proportion")
 ```
+
+### Citation
+Thorson, J. T., Arimitsu, M. L., Levi, T., & Roffler, G. (In press). Diet analysis using generalized linear models derived from foraging processes using R package mvtweedie. Ecology.
+
