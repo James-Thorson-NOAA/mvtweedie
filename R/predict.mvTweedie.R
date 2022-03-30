@@ -41,7 +41,7 @@
 #' @method predict mvtweedie
 #' @export
 predict.mvtweedie <-
-function(x,
+function( x,
 #                  original_class = "glmmTMB",
                   category_name = "group",
                   newdata,
@@ -56,6 +56,14 @@ function(x,
     if( se.fit==TRUE ) error("se.fit not implemented for predict using VAST")
   }else{
     stop("`predict.mvtweedie` only implemented for mgcv, glmmTMB and VAST")
+  }
+
+  # Check and account for tibbles
+  if( "package:tibble" %in% search() ){
+    if( is_tibble(origdata) ){
+      warning("Converting `origdata` from tibble to data.frame")
+      origdata = as.data.frame(origdata)
+    }
   }
 
   # Defaults
