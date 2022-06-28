@@ -43,5 +43,5 @@ ggplot(newdata, aes(Year, fit)) +
 ```
 
 ### Citation
-Thorson, J. T., Arimitsu, M. L., Levi, T., & Roffler, G. (In press). Diet analysis using generalized linear models derived from foraging processes using R package mvtweedie. Ecology.
+Thorson, J. T., Arimitsu, M. L., Levi, T., & Roffler, G. (2022). [Diet analysis using generalized linear models derived from foraging processes using R package mvtweedie](https://doi.org/10.1002/ecy.3637). Ecology. 103(5): e3637.
 
