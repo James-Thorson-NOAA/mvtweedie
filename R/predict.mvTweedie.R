@@ -50,8 +50,8 @@ function( x,
 {
   # Error checks
   if( any(c("gam","glmmTMB") %in% class(x)) ){
-    if( tolower(substr(family(x)$family,1,7)) != "tweedie" ) error("`predict.mvtweedie` only implemented for a Tweedie distribution")
-    if( family(x)$link != "log" ) error("`predict.mvtweedie` only implemented for a log link")
+    if( tolower(substr(family(x)$family,1,7)) != "tweedie" ) warning("`predict.mvtweedie` only implemented for a Tweedie distribution")
+    if( family(x)$link != "log" ) stop("`predict.mvtweedie` only implemented for a log link")
   }else if( "fit_model"%in%class(x) ){
     if( se.fit==TRUE ) error("se.fit not implemented for predict using VAST")
   }else{
