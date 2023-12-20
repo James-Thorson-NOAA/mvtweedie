@@ -3,24 +3,34 @@
 \docType{data}
 \name{Middleton_Island_TUPU}
 \alias{Middleton_Island_TUPU}
-\title{Data to demonstrate and test multivariate logit Tweedie model}
+\title{Middleton Island tufted puffin diets}
 \usage{
 data(Middleton_Island_TUPU)
 }
+\value{
+A data long-form data frame
+}
 \description{
-Data sufficient to demonstrate how to use a Tweedie GLM to provide inference
- about proportions e.g. in food habits analysis, where the model output is
- processed to represent a multivariate logit Tweedie model.
+Data to demonstrate and test multivariate logit Tweedie model
 }
 \details{
-Specifically includes Tufted Puffin bill loads sampled at Middleton Island.
+Data sufficient to demonstrate how to use a Tweedie GLM to provide inference
+about proportions e.g. in food habits analysis, where the model output is
+processed to represent a multivariate logit Tweedie model.
+
+Specifically includes Tufted Puffin (Fratercula cirrhata) bill loads sampled at Middleton Island.
 
 \itemize{
-  \item \code{Response} Numeric prey biomass in bill load samples
-  \item \code{Year} Numeric year
-  \item \code{group} factor representing prey species or category
-  \item \code{SampleID} factor with a level for every sampling occasion, e.g., for use in row normalization
+\item \code{Response} Numeric prey biomass in bill load samples
+\item \code{Year} Numeric year
+\item \code{group} factor representing prey species or category
+\item \code{SampleID} factor with a level for every sampling occasion, e.g., for use in row normalization
 }
+}
+\references{
+Hatch, S., and G. Sanger. 1992. Puffins as Samplers of Juvenile
+Pollock and Other Forage
+Fish in the Gulf of Alaska. Marine Ecology Progress Series 80: 1-14.
 }
 \author{
 Mayumi Arimitsu

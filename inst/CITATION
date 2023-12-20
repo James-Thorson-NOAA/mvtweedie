@@ -1,0 +1,20 @@
+citHeader("To see how the multivariate Tweedie distribution arises form a thinned and double-marked Poisson point process for predator foraging, please see Thorson et al. (2022).")
+
+bibentry(bibtype = "Article",
+           textVersion = "Thorson, J. T., Arimitsu, M. L., Levi, T., & Roffler, G. H. (2022). Diet analysis using generalized linear models derived from foraging processes using R package mvtweedie. Ecology, 103(5), e3637. https://doi.org/10.1002/ecy.3637",
+           title = "Diet analysis using generalized linear models derived from foraging processes using R package mvtweedie",
+           journal = "Ecology",
+           volume = "103",
+           number = "5",
+           pages = "e3637",
+           year = "2022",
+           doi = "doi.org/10.1002/ecy.3637",
+           url = "https://doi.org/10.1002/ecy.3637",
+           author = c(person(given = c("J.", "T."),
+                             family = "Thorson"),
+                      person(given = c("Mayumi", "L."),
+                             family = "Arimitsu"),
+                      person(given = "Taal",
+                             family = "Levi"),
+                      person(given = "Gretchen",
+                             family = "Roffler")) )
