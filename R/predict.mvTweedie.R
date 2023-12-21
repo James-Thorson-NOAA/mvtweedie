@@ -3,17 +3,39 @@
 #'
 #' @description Predict proportions and associated standard errors using a standard S3 object interface
 #'
-#' @details A Tweedie GLM using a log-link and multiple categories can be
-#' transformed to yield predicted proportions and associated SEs, where the
-#' model is interpreted as a multivariate logit Tweedie distribution. This function
-#' does this transformation for a model fitted using:
-#' \itemize{
-#' \item A generalized additive model (GAM) using \code{\link[mgcv]{gam}}
-#' \item A generalized linear mixed model (GLMM) using \code{\link[glmmTMB]{glmmTMB}}
-#' }
-#' It then also calculates an approximation to the standard error for this proportion
+#' @details 
+#' After fitting Tweedie GLM using a log-link and multiple categories, we
+#' transform predicted densities to yield predicted proportions and associated SEs. 
+#' This estimator for proportions arises naturally when analyzing a double-marked
+#' point process for diet samples, with marks for category and size.  
 #'
-#' @importFrom mgcv gam predict.gam
+#' \code{predict.mvtweedie} does this transformation for a model fitted using:
+#' \itemize{
+#'   \item A generalized additive model (GAM) using \code{\link[mgcv]{gam} in _mgcv_ }
+#'   \item A generalized linear mixed model (GLMM) using \code{\link[glmmTMB]{glmmTMB} in _glmmTMB_}
+#' }
+#' It then also calculates an approximation to the standard error for this proportion.
+#' Specifically, we calculate the proportion for each category as the density \eqn{X}
+#' for that category, and the sum of densities \eqn{Y} for all other categories:
+#'
+#' \deqn{ p_X = \frac{X}{X+Y} }
+#'
+#' Assuming we have an estimator for the standard error \eqn{SE(X)} and \eqn{SE(Y)},
+#' and assuming that those estimators are independent such that 
+#' \eqn{SE(X+Y)^2 = SE(X)^2 + SE(Y)^2 }, we then apply the 
+#' delta method to approximate the standard
+#' error for the proportion as:
+#'
+#' \deqn{ SE(p_X)^2 = \frac{X^2}{(X+Y)^2} \left( \frac{SE(X)^2}{X^2} - 
+#'              2\frac{SE(X)^2}{X(X+Y)}+ 
+#'              \frac{SE(X)^2 + SE(Y)^2}{(X+Y)^2} \right) }
+#'
+#' Predictions \eqn{X} and \eqn{Y}, and standard errors \eqn{SE(X)} and \eqn{SE(Y)}
+#' are then supplied by the \code{predict} function that is native to the software
+#' used when fitting the model.
+#'
+#' @importFrom stats family predict
+#'
 #' @inheritParams stats::predict.lm
 #' @param object output from \code{\link[mgcv]{gam}} or \code{\link[glmmTMB]{glmmTMB}}, but with
 #'    \code{class(object)=c("mvtweedie",...)} where \code{...} indicates the original values for
@@ -21,20 +43,24 @@
 #' @param category_name name of column that indicates grouping variable
 #' @param origdata original data used when fitting
 #'
-#' @examples
+#' @examplesIf require("mgcv", quietly = TRUE)
 #' # Load packages
 #' library(mvtweedie)
+#' library(mgcv)
 #'
 #' # load data set
 #' data( Middleton_Island_TUPU, package="mvtweedie" )
-#' DF = Middleton_Island_TUPU
 #'
 #' # Run Tweedie GLM
-#' gam0 = mgcv::gam( formula = Response ~ 0 + group, data = DF, family = tw )
+#' gam0 = gam( formula = Response ~ 0 + group, 
+#'             data = Middleton_Island_TUPU, 
+#'             family = tw )
 #'
 #' # Inspect results
 #' class(gam0) = c( "mvtweedie", class(gam0) )
-#' predict(gam0, se.fit=TRUE, origdata = DF)
+#' predict( gam0, 
+#'          se.fit = TRUE, 
+#'          origdata = Middleton_Island_TUPU)
 #'
 #' @return
 #' predict.mvtweedie produces a vector of predicted proportions or a list containing 
@@ -51,21 +77,17 @@ function( object,
           ... )
 {
   # Error checks
-  if( any(c("gam","glmmTMB") %in% class(object)) ){
-    if( tolower(substr(family(object)$family,1,7)) != "tweedie" ) warning("`predict.mvtweedie` only implemented for a Tweedie distribution")
-    if( family(object)$link != "log" ) stop("`predict.mvtweedie` only implemented for a log link")
-  }else if( "fit_model"%in%class(object) ){
-    if( se.fit==TRUE ) error("se.fit not implemented for predict using VAST")
-  }else{
-    stop("`predict.mvtweedie` only implemented for mgcv, glmmTMB and VAST")
-  }
-
-  # Check and account for tibbles
-  if( "package:tibble" %in% search() ){
-    if( is_tibble(origdata) ){
-      warning("Converting `origdata` from tibble to data.frame")
-      origdata = as.data.frame(origdata)
+  #if( any(c("gam","glmmTMB") %in% class(object)) ){
+  if( inherits(object,"gam") | inherits(object,"glmmTMB") ){
+    # mgcv::gam( ..., family=tw) has e.g., `family(object) = "Tweedie(p=1.44)"`
+    if( !grepl("tweedie", tolower(family(object)$family)) ){
+      warning("`predict.mvtweedie` only intended for a Tweedie distribution")
     }
+    if( family(object)$link != "log" ){
+      stop("`predict.mvtweedie` only implemented for a log link")
+    }
+  }else{
+    stop("`predict.mvtweedie` only implemented for mgcv and glmmTMB")
   }
 
   # Defaults
@@ -84,27 +106,15 @@ function( object,
     #class(object) = original_class
 
     # Apply predict.original_class
-    if( "fit_model" %in% class(object) ){
-      # if using VAST
-      pred_ic[,cI] = predict(object,
-                   what="D_i",
-                   Lat_i=object$data_frame[,'Lat_i'],
-                   Lon_i=object$data_frame[,'Lon_i'],
-                   t_i=object$data_frame[,'t_i'],
-                   a_i=object$data_frame[,'a_i'],
-                   c_iz=rep(cI-1,nrow(object$data_frame)),
-                   v_i=object$data_frame[,'v_i'] )
+    pred = predict(object,
+                 newdata = data,
+                 type="response",
+                 se.fit = se.fit )
+    if( isTRUE(se.fit) ){
+      pred_ic[,cI] = pred$fit
+      se_pred_ic[,cI] = pred$se.fit
     }else{
-      pred = predict(object,
-                   newdata = data,
-                   type="response",
-                   se.fit = se.fit )
-      if( se.fit==TRUE ){
-        pred_ic[,cI] = pred$fit
-        se_pred_ic[,cI] = pred$se.fit
-      }else{
-        pred_ic[,cI] = pred
-      }
+      pred_ic[,cI] = pred
     }
   }
 
@@ -114,7 +124,7 @@ function( object,
   prob_i = prob_ic[ cbind(1:nrow(pred_ic), match(newdata[,category_name],levels(origdata[,category_name]))) ]
 
   # return prediction
-  if( se.fit==TRUE ){
+  if( isTRUE(se.fit) ){
     # Normalize SE-squared for each observation and class
     rowsum_se2_ic = outer( rowSums(se_pred_ic^2), rep(1,ncol(pred_ic)) )
     se2_prob_ic = prob_ic^2 * ( se_pred_ic^2/pred_ic^2 - 2*se_pred_ic^2/(pred_ic*rowsum_pred_ic) + rowsum_se2_ic/rowsum_pred_ic^2 )

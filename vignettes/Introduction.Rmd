@@ -25,17 +25,17 @@ fig_height = 7/3
 #  setwd(R'(C:\Users\James.Thorson\Desktop\Git\mvtweedie)'); devtools::build_rmd("vignettes/Introduction.Rmd"); rmarkdown::render( "vignettes/Introduction.Rmd", rmarkdown::pdf_document())
 ```
 
-# Introducing the mvtweedie distribution for regression-based analysis of stomach contents
+# Introducing the mvtweedie distribution for regression-based analysis of diet samples
 
-`mvtweedie` is n R package to interpret a Tweedie generalized linear model (GLM) or generalized additive model (GAM) involving multiple classes as an estimate of proportions for each class, implicitly involving a multivariate-logit transformation for parameters and predictions. This approach generalizes the Poisson-to-multinomial transformation to allow for non-integer responses, and can analyze either pre-processed (transformed to proportions) or raw (zero-inflated positive real values) data.
+`mvtweedie` is an R package to interpret a Tweedie generalized linear model (GLM) or generalized additive model (GAM) involving multiple classes as an estimate of proportions for each class, implicitly involving a multivariate-logit transformation for parameters and predictions. This approach generalizes the Poisson-to-multinomial transformation to allow for non-integer responses, and can analyze either pre-processed (transformed to proportions) or raw (zero-inflated positive real values) data.
 
-This approach is helpful, e.g., when analyzing diet samples that are heavily zero inflated without pre-processing the samples prior to analysis. In these cases, the Tweedie distribution can be interpreted mechanistically as a thinned and double-marked Poisson point process representing foraging processes.
+This approach may be helpful, for example, when analyzing diet samples that are heavily zero inflated without pre-processing the samples prior to analysis. In these cases, the Tweedie distribution can be interpreted mechanistically as a thinned and double-marked Poisson point process representing foraging processes.
 
 ## Ecological motivation
 
-We propose thinking about diet samples as arising from a thinnned and double-marked point process, with marks representing prey category and size. To visualize this, we simulate a square spatial domain with three prey species, each having a different utilization distribution.  We then simulate the location and size for each individual of each prey species.  We also imagine that a predator might be sampled at three different locations, and that it has recently moved through an area of varied size (shown as shaded circles).
+We propose thinking about diet samples as arising from a thinnned and double-marked point process, with marks representing prey category and size. To visualize this, we simulate a square spatial domain with three prey species, each having a different utilization distribution (shown using contours to indicate expected densities).  We then simulate a single realization from this process, plotting the location and size for each individual of each prey species.  We also imagine that a predator might be sampled at three different locations, and that it has recently foraged in areas of varied size, labeled sites A, B, and C  (shown as shaded circles), where these foraging areas occur in areas with different densities of the three prey species.
 
-```{r, eval=TRUE, include=TRUE, echo=FALSE, warning=FALSE, fig.width=fig_width, fig.height=fig_height}
+```{r, eval=TRUE, include=TRUE, echo=FALSE, message=FALSE, warning=FALSE, fig.width=fig_width, fig.height=fig_height}
 set.seed(101)
 library(viridisLite)
 library(tweedie)
@@ -184,9 +184,9 @@ for( rI in 1:n_r ){
 }
 ```
 
-For this data-generating process, we can conduct multiple simulations to calculate the true distribution of prey proportions that occurred within the foraging area for a predator at sites A, B, or C.  This will sometimes be zero for a given prey (which occurs when no prey individual is within that foraging patch), and is otherwise a continuous-valued and positive response (arising as the sum of prey size for all prey individuals in that area). 
+For this data-generating process, we can simulate multiple replicates to sample from the true distribution of prey proportions that occurred within those three sites A, B, or C.  This will sometimes be zero for a given prey (which occurs when no prey individual is within that foraging patch), and is otherwise a continuous-valued and positive response (arising as the sum of prey size for all prey individuals in that area). 
 
-We first plot this distribution for the proportion of each prey at each site.  
+We first plot samples from this true distribution for the proportion of each prey at each site, and also calculate the average (expected) proportion for each prey at each site.  
 
 ```{r, eval=TRUE, include=TRUE, echo=FALSE, warning=FALSE, fig.width=fig_width, fig.height=fig_height}
 par(mfrow=c(1,3), mar=c(2,2,2,1), oma=c(0,3.5,0,0), mgp=c(2,0.5,0), tck=-0.02, yaxs="i" )
@@ -259,7 +259,7 @@ for( c1 in 1:3 ){
 }
 ```
 
-Finally, we can approximate that true distribution for prey proportions using a generalized linear model with a log-linked Tweedie distribution, and converting predictions to a proportion.  We will call this a *multivariate Tweedie* distribution.  However, we do not have a closed-form expression for its moment-generating function, so it could instead be interpreted as a "multivariate Tweedie generalized estimating equation".
+Finally, we can approximate that true distribution for prey proportions using a generalized linear model with a log-linked Tweedie distribution, and converting predicted prey densities to a proportion.  We will call this a *multivariate Tweedie* distribution.  However, we do not have a closed-form expression for its moment-generating function, so it could instead be interpreted as a "multivariate Tweedie generalized estimating equation".
 
 ```{r, eval=TRUE, include=TRUE, echo=FALSE, warning=FALSE, fig.width=fig_width, fig.height=fig_height}
 par(mfrow=c(1,3), mar=c(2,2,2,1), oma=c(0,3.5,0,0), mgp=c(2,0.5,0), tck=-0.02, yaxs="i" )
@@ -319,11 +319,11 @@ for( c1 in 1:3 ){
 }
 ```
 
-We therefore propose to use this log-linked Tweedie GLM to fit diet samples and predict prey proportions.  
+Given the potential for this multivariate-Tweedie distribution to approximate the true distribution for prey proportions (including both the proportion of zeros, the distribution for positive values, and the mean proportions), we therefore propose to use this log-linked Tweedie GLM to fit diet samples and predict resulting prey proportions.  
 
-# Example application for tuften puffins on Middleton Island
+# Example application for tufted puffins on Middleton Island
 
-To apply this method, we first format our data as a long-form data frame, which includes a row for each combination of prey and sample, and columns for prey group and sample ID, the measured quantity in that diet sample for each prey, and any predictor and/or offset variables.
+So far, we have showed that the multivariate Tweedie distribution can approximate the sampling distribution from a double-marked point process.  We next show how it can be specified as a distribution in a multi-class generalized linear model, infer covariate effects, and predict prey proportions.  To do so, we first format our data as a long-form data frame, which includes a row for each combination of prey and sample, and columns for prey group and sample ID, the measured quantity in that diet sample for each prey, and any predictor and/or offset variables.
 
 ```{r, eval=TRUE, echo=TRUE, message=FALSE, fig.width=6, fig.height=6, out.width = "75%"}
 # Loading package
@@ -339,11 +339,11 @@ knitr::kable( head(Middleton_Island_TUPU), digits=1, row.names=FALSE)
 
 We then fit a log-linked regression model for the prey samples, with multiple responses for each sample.  In this case, we use _mgcv_ to fit a Generalized Additive Model (GAM) and specifically include:
 
-1.  a smoothing term `s(Year)` that is shared among prey groups, representing variation over time in the expected prey biomass in each stomach;
+1.  a smoothing term `s(Year)` that is shared among prey groups, representing variation over time in the expected prey biomass in each diet sample;
 2.  a smoothing term `s(Year,by=group)` that differs among prey groups, representing prey switching over time;
-3.  a group-specific intercept `0 + group` that represents expected differences in prey proportion over time
+3.  a group-specific intercept `0 + group` that represents expected differences in prey proportion on average over time.
 
-The first term is essentially a "detectability" covariate, representing changes in attack and capture rates over time.  It could be replaced by a fixed or random effect for each sample, although such a model is slow using _mgcv_.  It has a equal effect for predicted measurements for each prey category (due to us using a log-linked model), and therefore "drops out" when predicting prey proportions.  Alternatively, we could pre-process the data such that each sample has a constant mean prey density.  This will be (rougly) similar to marginalizing across the unmodeled variation in total prey measurement for each sample.  
+The first term is essentially a "detectability" covariate, representing changes in attack and capture rates over time that affect the sampled value for all prey in a given year.  It could be replaced by a fixed or random effect for each sample, although such a model is slow using _mgcv_.  It has a equal effect for predicted measurements for each prey category (because we are fitting using a log-linked model), and therefore "drops out" when predicting prey proportions.  Alternatively, we could pre-process the data such that each sample has a constant mean prey density.  This will be (roughly) similar to marginalizing across the unmodeled variation in total prey measurement for each sample.  
 
 ```{r, eval=TRUE, echo=TRUE, message=FALSE, fig.width=6, fig.height=6, out.width = "75%"}
 # Run Tweedie GLM
@@ -383,7 +383,6 @@ theme_set(theme_bw())
 ggplot(newdata, aes(Year, fit)) +
   geom_pointrange(aes(ymin = lower, ymax = upper)) +
   facet_wrap(vars(group)) +
-  scale_color_viridis_c(name = "SST") +
   ylim(0,1) +
   labs(y="Predicted proportion")
 ```
@@ -421,11 +420,11 @@ ggplot(data=Partial, aes(x=Year, y=yhat)) + # , group=yhat.id
   labs(y="Predicted proportion")
 ```
 
-In this simple example, the partial dependence plot and predictive grid both result in the same visualization of effects.  However, this is not guarunteed to be the case in models with more covariates. 
+In this simple example, the partial dependence plot and predictive grid both result in the same visualization of effects.  However, this is not guaranteed to be the case in models with more covariates. 
 
-# Spatial analysis of Wolf prey
+# Spatial analysis of wolf prey
 
-We next demonstrate how the multivariate Tweedie can be used in a spatial analysis to predict diet proportions.  We use samples of environmental DNA from wolf scats collected in southeast Alaska.  We reduce analysis to four selected prey species to speed up model fitting.
+We next demonstrate how the multivariate Tweedie can be used in a spatial analysis to predict diet proportions.  We use samples of environmental DNA from wolf scats collected in southeast Alaska, and restrict analysis to four selected prey species to speed up model fitting (the model would likely be faster using software that is specialized for multivariate spatio-temporal analysis).
 
 ```{r, eval=TRUE, echo=TRUE, message=FALSE, fig.width=6, fig.height=6, warning=FALSE}
 # Load data
@@ -519,7 +518,7 @@ pred_wolf = predict_grid( gam_wolf,
 pred_wolf$cv.fit = pred_wolf$se.fit / pred_wolf$fit
 
 # Map oceanmap layer
-US_high = ne_countries(scale=10, country="united states of america")
+US_high = ne_countries(scale=50, country="united states of america")
 st_box = st_polygon( list(cbind( x=c(-140,-125,-124,-140,-140), 
                                  y=c(50,50,60,60,50))) )
 st_box = st_sfc(st_box, crs=st_crs(US_high) )
@@ -531,7 +530,7 @@ sf.isl <- data.frame(island = c("Baranof", "Chichagof", "Admiralty"),
                      lon = c(-135.1866, -136.0024, -134.5776)) %>%
   st_as_sf(., coords = c("lon", "lat"), crs = 4326) 
 
-mask.land = ne_countries(scale=10, country="united states of america", returnclass = 'sf') %>%
+mask.land = ne_countries(scale=50, country="united states of america", returnclass = 'sf') %>%
   st_set_crs(., 4326) %>%
   st_cast(., "POLYGON") %>%
   st_join(., sf.isl) %>% 
@@ -550,3 +549,5 @@ ggplot(oceanmap) +
   scale_x_continuous(breaks = c(-135, -133.5, -132)) +
   theme(axis.text = element_text(size = 7))
 ``` 
+
+These results visualize spatial prey switching, e.g., a greater proportion of marine mammals in wolf diets in islands.  

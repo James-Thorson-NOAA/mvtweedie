@@ -37,29 +37,54 @@ predicted proportions and standard errors.
 Predict proportions and associated standard errors using a standard S3 object interface
 }
 \details{
-A Tweedie GLM using a log-link and multiple categories can be
-transformed to yield predicted proportions and associated SEs, where the
-model is interpreted as a multivariate logit Tweedie distribution. This function
-does this transformation for a model fitted using:
+After fitting Tweedie GLM using a log-link and multiple categories, we
+transform predicted densities to yield predicted proportions and associated SEs.
+This estimator for proportions arises naturally when analyzing a double-marked
+point process for diet samples, with marks for category and size.
+
+\code{predict.mvtweedie} does this transformation for a model fitted using:
 \itemize{
-\item A generalized additive model (GAM) using \code{\link[mgcv]{gam}}
-\item A generalized linear mixed model (GLMM) using \code{\link[glmmTMB]{glmmTMB}}
+\item A generalized additive model (GAM) using \code{\link[mgcv]{gam} in _mgcv_ }
+\item A generalized linear mixed model (GLMM) using \code{\link[glmmTMB]{glmmTMB} in _glmmTMB_}
 }
-It then also calculates an approximation to the standard error for this proportion
+It then also calculates an approximation to the standard error for this proportion.
+Specifically, we calculate the proportion for each category as the density \eqn{X}
+for that category, and the sum of densities \eqn{Y} for all other categories:
+
+\deqn{ p_X = \frac{X}{X+Y} }
+
+Assuming we have an estimator for the standard error \eqn{SE(X)} and \eqn{SE(Y)},
+and assuming that those estimators are independent such that
+\eqn{SE(X+Y)^2 = SE(X)^2 + SE(Y)^2 }, we then apply the
+delta method to approximate the standard
+error for the proportion as:
+
+\deqn{ SE(p_X)^2 = \frac{X^2}{(X+Y)^2} \left( \frac{SE(X)^2}{X^2} - 
+             2\frac{SE(X)^2}{X(X+Y)}+ 
+             \frac{SE(X)^2 + SE(Y)^2}{(X+Y)^2} \right) }
+
+Predictions \eqn{X} and \eqn{Y}, and standard errors \eqn{SE(X)} and \eqn{SE(Y)}
+are then supplied by the \code{predict} function that is native to the software
+used when fitting the model.
 }
 \examples{
+\dontshow{if (require("mgcv", quietly = TRUE)) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # Load packages
 library(mvtweedie)
+library(mgcv)
 
 # load data set
 data( Middleton_Island_TUPU, package="mvtweedie" )
-DF = Middleton_Island_TUPU
 
 # Run Tweedie GLM
-gam0 = mgcv::gam( formula = Response ~ 0 + group, data = DF, family = tw )
+gam0 = gam( formula = Response ~ 0 + group, 
+            data = Middleton_Island_TUPU, 
+            family = tw )
 
 # Inspect results
 class(gam0) = c( "mvtweedie", class(gam0) )
-predict(gam0, se.fit=TRUE, origdata = DF)
-
+predict( gam0, 
+         se.fit = TRUE, 
+         origdata = Middleton_Island_TUPU)
+\dontshow{\}) # examplesIf}
 }

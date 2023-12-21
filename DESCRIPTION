@@ -14,9 +14,10 @@ Description: Defines predict function that transforms output from a Tweedie GLM
     fitted using mgcv or glmmTMB, and returns predictions of an equivalent 
     multivariate logit Tweedie model.  This can then be used for standard plotting
     and diagnostics.  See Thorson et al. 2022 <doi:10.1002/ecy.3637>.   
-Imports:
-    mgcv,
 Suggests:
+    mgcv,
+    knitr,
+    rmarkdown,
     ggplot2,
     glmmTMB,
     lattice,
@@ -28,9 +29,10 @@ Suggests:
     tweedie,
     abind,
     rnaturalearth,
-    rnaturalearthhires,
+    rnaturalearthdata,
     sf,
-    dplyr
+    dplyr,
+    viridisLite
 Depends: 
     R (>= 4.0.0)
 License: GPL-3
