@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">mvtweedie</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -76,8 +76,6 @@ Thorson</h4>
 <h2 id="introducing-the-mvtweedie-distribution-for-regression-based-analysis-of-stomach-contents">Introducing the mvtweedie distribution for regression-based analysis
 of stomach contents<a class="anchor" aria-label="anchor" href="#introducing-the-mvtweedie-distribution-for-regression-based-analysis-of-stomach-contents"></a>
 </h2>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://james-thorson-noaa.github.io/mvtweedie/" class="external-link">mvtweedie</a></span><span class="op">)</span></span></code></pre></div>
 <p><code>mvtweedie</code> is n R package to interpret a Tweedie
 generalized linear model (GLM) or generalized additive model (GAM)
 involving multiple classes as an estimate of proportions for each class,
@@ -92,14 +90,52 @@ analysis. In these cases, the Tweedie distribution can be interpreted
 mechanistically as a thinned and double-marked Poisson point process
 representing foraging processes.</p>
 <div class="section level3">
-<h3 id="example-application-for-tuften-puffins-on-middleton-island">Example application for tuften puffins on Middleton Island<a class="anchor" aria-label="anchor" href="#example-application-for-tuften-puffins-on-middleton-island"></a>
+<h3 id="ecological-motivation">Ecological motivation<a class="anchor" aria-label="anchor" href="#ecological-motivation"></a>
 </h3>
+<p>We propose thinking about diet samples as arising from a thinnned and
+double-marked point process, with marks representing prey category and
+size. To visualize this, we simulate a square spatial domain with three
+prey species, each having a different utilization distribution. We then
+simulate the location and size for each individual of each prey species.
+We also imagine that a predator might be sampled at three different
+locations, and that it has recently moved through an area of varied size
+(shown as shaded circles).</p>
+<pre><code><span><span class="co">#&gt; Loading required package: sp</span></span></code></pre>
+<p><img src="Introduction_files/figure-html/unnamed-chunk-2-1.png" width="672"></p>
+<p>For this data-generating process, we can conduct multiple simulations
+to calculate the true distribution of prey proportions that occurred
+within the foraging area for a predator at sites A, B, or C. This will
+sometimes be zero for a given prey (which occurs when no prey individual
+is within that foraging patch), and is otherwise a continuous-valued and
+positive response (arising as the sum of prey size for all prey
+individuals in that area).</p>
+<p>We first plot this distribution for the proportion of each prey at
+each site.</p>
+<p><img src="Introduction_files/figure-html/unnamed-chunk-3-1.png" width="672"></p>
+<p>Finally, we can approximate that true distribution for prey
+proportions using a generalized linear model with a log-linked Tweedie
+distribution, and converting predictions to a proportion. We will call
+this a <em>multivariate Tweedie</em> distribution. However, we do not
+have a closed-form expression for its moment-generating function, so it
+could instead be interpreted as a “multivariate Tweedie generalized
+estimating equation”.</p>
+<p><img src="Introduction_files/figure-html/unnamed-chunk-4-1.png" width="672"></p>
+<p>We therefore propose to use this log-linked Tweedie GLM to fit diet
+samples and predict prey proportions.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="example-application-for-tuften-puffins-on-middleton-island">Example application for tuften puffins on Middleton Island<a class="anchor" aria-label="anchor" href="#example-application-for-tuften-puffins-on-middleton-island"></a>
+</h2>
 <p>To apply this method, we first format our data as a long-form data
 frame, which includes a row for each combination of prey and sample, and
 columns for prey group and sample ID, the measured quantity in that diet
 sample for each prey, and any predictor and/or offset variables.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># load data set</span></span>
+<code class="sourceCode R"><span><span class="co"># Loading package</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://james-thorson-noaa.github.io/mvtweedie/" class="external-link">mvtweedie</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># load data set</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span> <span class="va">Middleton_Island_TUPU</span>, package<span class="op">=</span><span class="st">"mvtweedie"</span> <span class="op">)</span></span>
 <span><span class="va">Middleton_Island_TUPU</span><span class="op">$</span><span class="va">Year</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span> <span class="va">Middleton_Island_TUPU</span><span class="op">$</span><span class="va">Year_factor</span> <span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -203,11 +239,9 @@ response to terms that are included in the <code>formula</code>).
 However, <code>predict(mygam)</code> will now predict the response as
 proportions across modeled categories, and does include a negative
 covariance among categories.</p>
-</div>
-</div>
-<div class="section level2">
-<h2 id="visualizing-covariate-responses">Visualizing covariate responses<a class="anchor" aria-label="anchor" href="#visualizing-covariate-responses"></a>
-</h2>
+<div class="section level3">
+<h3 id="visualizing-covariate-responses">Visualizing covariate responses<a class="anchor" aria-label="anchor" href="#visualizing-covariate-responses"></a>
+</h3>
 <p>After fitting the model, we can visualize the predicted proportion
 for each prey as a function of covariates.</p>
 <p>In this simple example, we can manually construct a predictive grid
@@ -234,7 +268,7 @@ plot using <em>ggplot</em>.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_viridis.html" class="external-link">scale_color_viridis_c</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"SST"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html" class="external-link">ylim</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>y<span class="op">=</span><span class="st">"Predicted proportion"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Introduction_files/figure-html/unnamed-chunk-4-1.png" width="75%"></p>
+<p><img src="Introduction_files/figure-html/unnamed-chunk-7-1.png" width="672"></p>
 <p>In more complicated models, however, it might be cumbersome to
 construct a full grid across all covariates. We can instead automate
 this process using third-party packages. Here, we show how to use
@@ -262,7 +296,7 @@ this process using third-party packages. Here, we show how to use
 <span><span class="co"># Lattice plots as default option</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span> <span class="va"><a href="https://lattice.r-forge.r-project.org/" class="external-link">lattice</a></span> <span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/pdp/man/plotPartial.html" class="external-link">plotPartial</a></span><span class="op">(</span> <span class="va">Partial</span> <span class="op">)</span></span></code></pre></div>
-<p><img src="Introduction_files/figure-html/unnamed-chunk-5-1.png" width="75%"></p>
+<p><img src="Introduction_files/figure-html/unnamed-chunk-8-1.png" width="672"></p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># using in ggplot2</span></span>
@@ -270,10 +304,183 @@ this process using third-party packages. Here, we show how to use
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span> <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_grid.html" class="external-link">facet_grid</a></span><span class="op">(</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">group</span><span class="op">)</span> <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>y<span class="op">=</span><span class="st">"Predicted proportion"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Introduction_files/figure-html/unnamed-chunk-5-2.png" width="75%"></p>
+<p><img src="Introduction_files/figure-html/unnamed-chunk-8-2.png" width="672"></p>
 <p>In this simple example, the partial dependence plot and predictive
 grid both result in the same visualization of effects. However, this is
 not guarunteed to be the case in models with more covariates.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="spatial-analysis-of-wolf-prey">Spatial analysis of Wolf prey<a class="anchor" aria-label="anchor" href="#spatial-analysis-of-wolf-prey"></a>
+</h2>
+<p>We next demonstrate how the multivariate Tweedie can be used in a
+spatial analysis to predict diet proportions. We use samples of
+environmental DNA from wolf scats collected in southeast Alaska. We
+reduce analysis to four selected prey species to speed up model
+fitting.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Load data</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">southeast_alaska_wolf</span><span class="op">)</span></span>
+<span><span class="va">groups</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Black tailed deer"</span>,<span class="st">"Marine mammal"</span>, <span class="st">"Mountain goat"</span>, <span class="st">"Beaver"</span><span class="op">)</span></span>
+<span><span class="va">southeast_alaska_wolf</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span> <span class="va">southeast_alaska_wolf</span>,</span>
+<span>                                <span class="va">group</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">groups</span> <span class="op">)</span></span>
+<span></span>
+<span><span class="co"># </span></span>
+<span><span class="va">southeast_alaska_wolf</span><span class="op">$</span><span class="va">group</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">southeast_alaska_wolf</span><span class="op">$</span><span class="va">group</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Illustrate format</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">southeast_alaska_wolf</span><span class="op">)</span>, digits<span class="op">=</span><span class="fl">1</span>, row.names<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<thead><tr class="header">
+<th align="right">Latitude</th>
+<th align="right">Longitude</th>
+<th align="left">group</th>
+<th align="right">Response</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">55.2</td>
+<td align="right">-131.8</td>
+<td align="left">Black tailed deer</td>
+<td align="right">1469.7</td>
+</tr>
+<tr class="even">
+<td align="right">58.4</td>
+<td align="right">-135.7</td>
+<td align="left">Black tailed deer</td>
+<td align="right">4684.2</td>
+</tr>
+<tr class="odd">
+<td align="right">55.8</td>
+<td align="right">-133.0</td>
+<td align="left">Black tailed deer</td>
+<td align="right">24852.5</td>
+</tr>
+<tr class="even">
+<td align="right">55.8</td>
+<td align="right">-133.0</td>
+<td align="left">Black tailed deer</td>
+<td align="right">112592.0</td>
+</tr>
+<tr class="odd">
+<td align="right">56.2</td>
+<td align="right">-133.0</td>
+<td align="left">Black tailed deer</td>
+<td align="right">3585.5</td>
+</tr>
+<tr class="even">
+<td align="right">55.5</td>
+<td align="right">-132.8</td>
+<td align="left">Black tailed deer</td>
+<td align="right">40730.0</td>
+</tr>
+</tbody>
+</table>
+<p>We then fit a generalized additive model with a tensor-spline
+interaction of Latitude and Longitude.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Using mgcv</span></span>
+<span><span class="va">gam_wolf</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">gam</a></span><span class="op">(</span> formula <span class="op">=</span> <span class="va">Response</span> <span class="op">~</span> <span class="fl">0</span> <span class="op">+</span> <span class="va">group</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/pkg/mgcv/man/s.html" class="external-link">s</a></span><span class="op">(</span><span class="va">Latitude</span>,<span class="va">Longitude</span>,m<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">0.5</span><span class="op">)</span>,bs<span class="op">=</span><span class="st">"ds"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>     <span class="fu"><a href="https://rdrr.io/pkg/mgcv/man/s.html" class="external-link">s</a></span><span class="op">(</span><span class="va">Latitude</span>,<span class="va">Longitude</span>,by<span class="op">=</span><span class="va">group</span>,m<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">0.5</span><span class="op">)</span>,bs<span class="op">=</span><span class="st">"ds"</span><span class="op">)</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">southeast_alaska_wolf</span>,</span>
+<span>  family <span class="op">=</span> <span class="va">tw</span> <span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">gam_wolf</span><span class="op">)</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="st">"mvtweedie"</span>, <span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">gam_wolf</span><span class="op">)</span> <span class="op">)</span></span></code></pre></div>
+<p>Finally, we define a function that computes predictions on a grid
+formed from different values of each predictor:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">predict_grid</span> <span class="op">&lt;-</span></span>
+<span><span class="kw">function</span><span class="op">(</span> <span class="va">model</span>,</span>
+<span>          <span class="va">exclude_terms</span> <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>          <span class="va">length_out</span> <span class="op">=</span> <span class="fl">50</span>,</span>
+<span>          <span class="va">values</span> <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>          <span class="va">...</span> <span class="op">)</span><span class="op">{</span></span>
+<span></span>
+<span>  <span class="kw">if</span><span class="op">(</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gam"</span>,<span class="st">"glmmTMB"</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span><span class="op">)</span> <span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"`predict_grid` only implemented for mgcv and glmmTMB"</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">n_terms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">model</span><span class="op">[[</span><span class="st">"var.summary"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span>  <span class="va">term_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">term</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n_terms</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">term_summary</span> <span class="op">&lt;-</span> <span class="va">model</span><span class="op">[[</span><span class="st">"var.summary"</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="va">term</span><span class="op">]</span><span class="op">]</span></span>
+<span>    <span class="va">term_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">model</span><span class="op">[[</span><span class="st">"var.summary"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">[</span><span class="va">term</span><span class="op">]</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">term_name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">values</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">new_term</span> <span class="op">&lt;-</span> <span class="va">values</span><span class="op">[[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">values</span><span class="op">)</span> <span class="op">==</span> <span class="va">term_name</span><span class="op">)</span><span class="op">]</span><span class="op">]</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">new_term</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">new_term</span> <span class="op">&lt;-</span> <span class="va">model</span><span class="op">[[</span><span class="st">"var.summary"</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="va">term</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span>      <span class="op">}</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="kw">else</span> <span class="op">{</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">is.numeric</a></span><span class="op">(</span><span class="va">term_summary</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">min_value</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">term_summary</span><span class="op">)</span></span>
+<span>        <span class="va">max_value</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">term_summary</span><span class="op">)</span></span>
+<span>        <span class="va">new_term</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="va">min_value</span>, <span class="va">max_value</span>, length.out <span class="op">=</span> <span class="va">length_out</span><span class="op">)</span></span>
+<span>      <span class="op">}</span></span>
+<span>      <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">is.factor</a></span><span class="op">(</span><span class="va">term_summary</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">new_term</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">term_summary</span><span class="op">)</span></span>
+<span>      <span class="op">}</span></span>
+<span>      <span class="kw">else</span> <span class="op">{</span></span>
+<span>        <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"The terms are not numeric or factor.\n"</span><span class="op">)</span></span>
+<span>      <span class="op">}</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="va">term_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/append.html" class="external-link">append</a></span><span class="op">(</span><span class="va">term_list</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">new_term</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">term_list</span><span class="op">)</span><span class="op">[</span><span class="va">term</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">term_name</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">new_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html" class="external-link">expand.grid</a></span><span class="op">(</span><span class="va">term_list</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="st">"mvtweedie"</span>, <span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span> <span class="op">)</span></span>
+<span>  <span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span> <span class="va">model</span>,</span>
+<span>                   newdata <span class="op">=</span> <span class="va">new_data</span>,</span>
+<span>                   se.fit <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                   <span class="co">#original_class = c("gam","glm","lm"),</span></span>
+<span>                   <span class="va">...</span><span class="op">)</span></span>
+<span>  <span class="va">predicted</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">pred</span><span class="op">)</span></span>
+<span>  <span class="va">predictions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">new_data</span>, <span class="va">predicted</span><span class="op">)</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">predictions</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p>We use this function to visualize prey proportions across the
+landscape of southeast Alaska that is inhabited by wolves:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rnaturalearth/" class="external-link">rnaturalearth</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/raster" class="external-link">raster</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span><span class="co"># Predict raster on map</span></span>
+<span><span class="va">pred_wolf</span> <span class="op">=</span> <span class="fu">predict_grid</span><span class="op">(</span> <span class="va">gam_wolf</span>,</span>
+<span>                 origdata <span class="op">=</span> <span class="va">southeast_alaska_wolf</span>,</span>
+<span>                 length_out <span class="op">=</span> <span class="fl">100</span> <span class="op">)</span></span>
+<span><span class="va">pred_wolf</span><span class="op">$</span><span class="va">cv.fit</span> <span class="op">=</span> <span class="va">pred_wolf</span><span class="op">$</span><span class="va">se.fit</span> <span class="op">/</span> <span class="va">pred_wolf</span><span class="op">$</span><span class="va">fit</span></span>
+<span></span>
+<span><span class="co"># Map oceanmap layer</span></span>
+<span><span class="va">US_high</span> <span class="op">=</span> <span class="fu"><a href="https://docs.ropensci.org/rnaturalearth/reference/ne_countries.html" class="external-link">ne_countries</a></span><span class="op">(</span>scale<span class="op">=</span><span class="fl">10</span>, country<span class="op">=</span><span class="st">"united states of america"</span><span class="op">)</span></span>
+<span><span class="va">st_box</span> <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st.html" class="external-link">st_polygon</a></span><span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span> x<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">140</span>,<span class="op">-</span><span class="fl">125</span>,<span class="op">-</span><span class="fl">124</span>,<span class="op">-</span><span class="fl">140</span>,<span class="op">-</span><span class="fl">140</span><span class="op">)</span>, </span>
+<span>                                 y<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">50</span>,<span class="fl">50</span>,<span class="fl">60</span>,<span class="fl">60</span>,<span class="fl">50</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">)</span></span>
+<span><span class="va">st_box</span> <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/sfc.html" class="external-link">st_sfc</a></span><span class="op">(</span><span class="va">st_box</span>, crs<span class="op">=</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_crs.html" class="external-link">st_crs</a></span><span class="op">(</span><span class="va">US_high</span><span class="op">)</span> <span class="op">)</span></span>
+<span><span class="va">wmap</span> <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_binary_ops.html" class="external-link">st_intersection</a></span><span class="op">(</span> <span class="va">US_high</span>, <span class="va">st_box</span> <span class="op">)</span></span>
+<span><span class="va">oceanmap</span> <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_binary_ops.html" class="external-link">st_difference</a></span><span class="op">(</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sfc.html" class="external-link">st_as_sfc</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_bbox.html" class="external-link">st_bbox</a></span><span class="op">(</span><span class="va">wmap</span><span class="op">)</span><span class="op">)</span>, <span class="va">wmap</span> <span class="op">)</span></span>
+<span></span>
+<span><span class="va">sf.isl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>island <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Baranof"</span>, <span class="st">"Chichagof"</span>, <span class="st">"Admiralty"</span><span class="op">)</span>, </span>
+<span>                     lat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">57.20583</span>, <span class="fl">57.88784</span>, <span class="fl">57.59644</span><span class="op">)</span>, </span>
+<span>                     lon <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">135.1866</span>, <span class="op">-</span><span class="fl">136.0024</span>, <span class="op">-</span><span class="fl">134.5776</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="va">.</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lon"</span>, <span class="st">"lat"</span><span class="op">)</span>, crs <span class="op">=</span> <span class="fl">4326</span><span class="op">)</span> </span>
+<span></span>
+<span><span class="va">mask.land</span> <span class="op">=</span> <span class="fu"><a href="https://docs.ropensci.org/rnaturalearth/reference/ne_countries.html" class="external-link">ne_countries</a></span><span class="op">(</span>scale<span class="op">=</span><span class="fl">10</span>, country<span class="op">=</span><span class="st">"united states of america"</span>, returnclass <span class="op">=</span> <span class="st">'sf'</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_crs.html" class="external-link">st_set_crs</a></span><span class="op">(</span><span class="va">.</span>, <span class="fl">4326</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_cast.html" class="external-link">st_cast</a></span><span class="op">(</span><span class="va">.</span>, <span class="st">"POLYGON"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_join.html" class="external-link">st_join</a></span><span class="op">(</span><span class="va">.</span>, <span class="va">sf.isl</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">island</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Make figure</span></span>
+<span><span class="va">my_breaks</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.02</span>,<span class="fl">0.1</span>,<span class="fl">0.25</span>,<span class="fl">0.5</span>,<span class="fl">0.75</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">oceanmap</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html" class="external-link">geom_tile</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pred_wolf</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">Longitude</span>,y<span class="op">=</span><span class="va">Latitude</span>,fill<span class="op">=</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">mask.land</span>, inherit.aes <span class="op">=</span> <span class="cn">FALSE</span>, fill <span class="op">=</span> <span class="st">"darkgrey"</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">coord_sf</a></span><span class="op">(</span>xlim<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">pred_wolf</span><span class="op">$</span><span class="va">Longitude</span><span class="op">)</span>, ylim<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">pred_wolf</span><span class="op">$</span><span class="va">Latitude</span><span class="op">)</span>, expand <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">group</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_fill_gradient2</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Proportion"</span>, trans <span class="op">=</span> <span class="st">"sqrt"</span>, breaks <span class="op">=</span> <span class="va">my_breaks</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_y_continuous</a></span><span class="op">(</span>breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">55</span>,<span class="fl">59</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_continuous</a></span><span class="op">(</span>breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">135</span>, <span class="op">-</span><span class="fl">133.5</span>, <span class="op">-</span><span class="fl">132</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>axis.text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">7</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="Introduction_files/figure-html/unnamed-chunk-12-1.png" width="672"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
