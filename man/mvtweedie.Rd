@@ -21,17 +21,19 @@ errors) after the model is fitted, and we can represent covariance
 in prey measurements within a sample using covariates
 that explain sample-specific attack/capture rates.
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{     If the prey densities follow a 
-     a Poisson point-process, and prey size per encounter follows a gamma 
-     distribution, then the resulting distribution for biomass of each prey
-     follows a multivariate Tweedie distribution. We therefore interpret
-     the multivariate Tweedie distribution as a "process-based" model
-     for prey samples.
-}\if{html}{\out{</div>}}
+If the prey densities follow a
+a Poisson point-process, and prey size per encounter follows a gamma
+distribution, then the resulting distribution for biomass of each prey
+follows a multivariate Tweedie distribution. We therefore interpret
+the multivariate Tweedie distribution as a "process-based" model
+for prey samples.
 }
 \references{
 Thorson, J. T., Arimitsu, M. L., Levi, T., & Roffler, G. H. (2022).
 Diet analysis using generalized linear models derived from foraging
 processes using R package mvtweedie. Ecology, 103(5), e3637.
 \doi{10.1002/ecy.3637}
+}
+\seealso{
+\code{\link{predict.mvtweedie}} for details
 }

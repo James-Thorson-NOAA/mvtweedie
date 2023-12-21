@@ -53,17 +53,17 @@ for that category, and the sum of densities \eqn{Y} for all other categories:
 
 \deqn{ p_X = \frac{X}{X+Y} }
 
-Assuming we have an estimator for the standard error \eqn{SE(X)} and \eqn{SE(Y)},
+Assuming we have an estimator for the standard error \eqn{s(X)} and \eqn{s(Y)},
 and assuming that those estimators are independent such that
-\eqn{SE(X+Y)^2 = SE(X)^2 + SE(Y)^2 }, we then apply the
+\eqn{s(X+Y)^2 = s(X)^2 + s(Y)^2 }, we then apply the
 delta method to approximate the standard
 error for the proportion as:
 
-\deqn{ SE(p_X)^2 = \frac{X^2}{(X+Y)^2} \left( \frac{SE(X)^2}{X^2} - 
-             2\frac{SE(X)^2}{X(X+Y)}+ 
-             \frac{SE(X)^2 + SE(Y)^2}{(X+Y)^2} \right) }
+\deqn{ s(p_X)^2 = \frac{X^2}{(X+Y)^2} \left( \frac{s(X)^2}{X^2} - 
+             2\frac{s(X)^2}{X(X+Y)}+ 
+             \frac{s(X)^2 + s(Y)^2}{(X+Y)^2} \right) }
 
-Predictions \eqn{X} and \eqn{Y}, and standard errors \eqn{SE(X)} and \eqn{SE(Y)}
+Predictions \eqn{X} and \eqn{Y}, and standard errors \eqn{s(X)} and \eqn{s(Y)}
 are then supplied by the \code{predict} function that is native to the software
 used when fitting the model.
 }

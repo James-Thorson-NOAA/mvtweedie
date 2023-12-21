@@ -20,17 +20,17 @@
 #'
 #' \deqn{ p_X = \frac{X}{X+Y} }
 #'
-#' Assuming we have an estimator for the standard error \eqn{SE(X)} and \eqn{SE(Y)},
+#' Assuming we have an estimator for the standard error \eqn{s(X)} and \eqn{s(Y)},
 #' and assuming that those estimators are independent such that 
-#' \eqn{SE(X+Y)^2 = SE(X)^2 + SE(Y)^2 }, we then apply the 
+#' \eqn{s(X+Y)^2 = s(X)^2 + s(Y)^2 }, we then apply the 
 #' delta method to approximate the standard
 #' error for the proportion as:
 #'
-#' \deqn{ SE(p_X)^2 = \frac{X^2}{(X+Y)^2} \left( \frac{SE(X)^2}{X^2} - 
-#'              2\frac{SE(X)^2}{X(X+Y)}+ 
-#'              \frac{SE(X)^2 + SE(Y)^2}{(X+Y)^2} \right) }
+#' \deqn{ s(p_X)^2 = \frac{X^2}{(X+Y)^2} \left( \frac{s(X)^2}{X^2} - 
+#'              2\frac{s(X)^2}{X(X+Y)}+ 
+#'              \frac{s(X)^2 + s(Y)^2}{(X+Y)^2} \right) }
 #'
-#' Predictions \eqn{X} and \eqn{Y}, and standard errors \eqn{SE(X)} and \eqn{SE(Y)}
+#' Predictions \eqn{X} and \eqn{Y}, and standard errors \eqn{s(X)} and \eqn{s(Y)}
 #' are then supplied by the \code{predict} function that is native to the software
 #' used when fitting the model.
 #'
@@ -138,31 +138,37 @@ function( object,
 
 #' @name mvtweedie
 #' @rdname mvtweedie
-#' @title Multivariate Tweedie distribution for predicting diet proportions
+#' @title 
+#' Multivariate Tweedie distribution for predicting diet proportions
 #'
-#' @description Using regression methods to analyze diet proportions for a marked point process
+#' @description 
+#' Using regression methods to analyze diet proportions for a marked point process
 #'
-#' @details Diet samples often measure a count or biomass for different prey categories.
-#'          Rather than converting these data to a proportion and fitting 
-#'          these proportions as data, we can instead represent diet samples as an outcome
-#'          from a thinnned and double-marked point process, where marks 
-#'          include prey category and size per encounter, and thinning represents
-#'          variation in attack and capture rates and is conceptually similar to 
-#'          detectability/catchability in other point-count sampling analyses.
-#'          Analyzing raw prey measurements (rather than proportions) 
-#'          allows a wide range of models (and associated off-the-shelf software),
-#'          predictions can still be converted to proportions (with associated standard
-#'          errors) after the model is fitted, and we can represent covariance
-#'          in prey measurements within a sample using covariates
-#'          that explain sample-specific attack/capture rates.  
+#' @details 
+#' Diet samples often measure a count or biomass for different prey categories.
+#' Rather than converting these data to a proportion and fitting 
+#' these proportions as data, we can instead represent diet samples as an outcome
+#' from a thinnned and double-marked point process, where marks 
+#' include prey category and size per encounter, and thinning represents
+#' variation in attack and capture rates and is conceptually similar to 
+#' detectability/catchability in other point-count sampling analyses.
+#' Analyzing raw prey measurements (rather than proportions) 
+#' allows a wide range of models (and associated off-the-shelf software),
+#' predictions can still be converted to proportions (with associated standard
+#' errors) after the model is fitted, and we can represent covariance
+#' in prey measurements within a sample using covariates
+#' that explain sample-specific attack/capture rates.  
 #'          
-#'          If the prey densities follow a 
-#'          a Poisson point-process, and prey size per encounter follows a gamma 
-#'          distribution, then the resulting distribution for biomass of each prey
-#'          follows a multivariate Tweedie distribution. We therefore interpret
-#'          the multivariate Tweedie distribution as a "process-based" model
-#'          for prey samples.
+#' If the prey densities follow a 
+#' a Poisson point-process, and prey size per encounter follows a gamma 
+#' distribution, then the resulting distribution for biomass of each prey
+#' follows a multivariate Tweedie distribution. We therefore interpret
+#' the multivariate Tweedie distribution as a "process-based" model
+#' for prey samples.
 #' 
+#' @seealso 
+#' \code{\link{predict.mvtweedie}} for details
+#'
 #' @references
 #' Thorson, J. T., Arimitsu, M. L., Levi, T., & Roffler, G. H. (2022). 
 #' Diet analysis using generalized linear models derived from foraging 

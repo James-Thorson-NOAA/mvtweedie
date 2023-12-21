@@ -1,8 +1,8 @@
 Package: mvtweedie
 Type: Package
-Title: Fit multivariate logit Tweedie model using mgcv or glmmTMB
-Version: 1.2.0
-Date: 2023-12-20
+Title: Estimate Diet Proportions Using Multivariate Tweedie Model
+Version: 1.1.0
+Date: 2023-12-21
 Authors@R: 
     c(person(given = "James",
              family = "Thorson",

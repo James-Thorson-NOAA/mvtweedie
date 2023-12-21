@@ -33,7 +33,7 @@ This approach may be helpful, for example, when analyzing diet samples that are 
 
 ## Ecological motivation
 
-We propose thinking about diet samples as arising from a thinnned and double-marked point process, with marks representing prey category and size. To visualize this, we simulate a square spatial domain with three prey species, each having a different utilization distribution (shown using contours to indicate expected densities).  We then simulate a single realization from this process, plotting the location and size for each individual of each prey species.  We also imagine that a predator might be sampled at three different locations, and that it has recently foraged in areas of varied size, labeled sites A, B, and C  (shown as shaded circles), where these foraging areas occur in areas with different densities of the three prey species.
+We propose thinking about diet samples as arising from a thinned and double-marked point process, with marks representing prey category and size. To visualize this, we simulate a square spatial domain with three prey species, each having a different utilization distribution (shown using contours to indicate expected densities).  We then simulate a single realization from this process, plotting the location and size for each individual of each prey species.  We also imagine that a predator might be sampled at three different locations, and that it has recently foraged in areas of varied size, labeled sites A, B, and C  (shown as shaded circles), where these foraging areas occur in areas with different densities of the three prey species.
 
 ```{r, eval=TRUE, include=TRUE, echo=FALSE, message=FALSE, warning=FALSE, fig.width=fig_width, fig.height=fig_height}
 set.seed(101)
