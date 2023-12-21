@@ -11,11 +11,11 @@ data(Middleton_Island_TUPU)
 A data long-form data frame
 }
 \description{
-Data to demonstrate and test multivariate logit Tweedie model
+Data to demonstrate multivariate Tweedie GAM for time-series
 }
 \details{
-Data sufficient to demonstrate how to use a Tweedie GLM to provide inference
-about proportions e.g. in food habits analysis, where the model output is
+Data sufficient to demonstrate how to use a Tweedie Generalized Additive Model
+to provide inference about proportions e.g. in food habits analysis, where the model output is
 processed to represent a multivariate logit Tweedie model.
 
 Specifically includes Tufted Puffin (Fratercula cirrhata) bill loads sampled at Middleton Island.

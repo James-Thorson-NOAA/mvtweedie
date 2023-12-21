@@ -8,19 +8,26 @@ Using regression methods to analyze diet proportions for a marked point process
 }
 \details{
 Diet samples often measure a count or biomass for different prey categories.
-Rather than converting these data to a proportion and fitting modelling
-these proportions, we can instead represent diet samples as an outcome
+Rather than converting these data to a proportion and fitting
+these proportions as data, we can instead represent diet samples as an outcome
 from a thinnned and double-marked point process, where marks
-include prey size per encounter, and prey category, and thinning represents
-variation in attack and capture rates is is conceptually similar to
+include prey category and size per encounter, and thinning represents
+variation in attack and capture rates and is conceptually similar to
 detectability/catchability in other point-count sampling analyses.
-Analyzing raw prey measurements (rather than proportions) as a regression
-model allows a wide range of models (and associated off-the-shelf software)
-and predictions can be converted to proportions (with associated standard
-errors) after the model is fitted.  If the prey densities follow a
-a Poisson point-process, and prey size per encounter follows a gamma
-distribution, then the resulting distribution for biomass of each prey
-follows a multivariate Tweedie distribution.
+Analyzing raw prey measurements (rather than proportions)
+allows a wide range of models (and associated off-the-shelf software),
+predictions can still be converted to proportions (with associated standard
+errors) after the model is fitted, and we can represent covariance
+in prey measurements within a sample using covariates
+that explain sample-specific attack/capture rates.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{     If the prey densities follow a 
+     a Poisson point-process, and prey size per encounter follows a gamma 
+     distribution, then the resulting distribution for biomass of each prey
+     follows a multivariate Tweedie distribution. We therefore interpret
+     the multivariate Tweedie distribution as a "process-based" model
+     for prey samples.
+}\if{html}{\out{</div>}}
 }
 \references{
 Thorson, J. T., Arimitsu, M. L., Levi, T., & Roffler, G. H. (2022).

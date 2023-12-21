@@ -20,7 +20,17 @@ Suggests:
     ggplot2,
     glmmTMB,
     lattice,
-    pdp
+    pdp,
+    raster,
+    sp,
+    RANN,
+    plotrix,
+    tweedie,
+    abind,
+    rnaturalearth,
+    rnaturalearthhires,
+    sf,
+    dplyr
 Depends: 
     R (>= 4.0.0)
 License: GPL-3
