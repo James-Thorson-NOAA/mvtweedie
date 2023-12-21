@@ -95,43 +95,54 @@ representing foraging processes.</p>
 <p>We propose thinking about diet samples as arising from a thinnned and
 double-marked point process, with marks representing prey category and
 size. To visualize this, we simulate a square spatial domain with three
-prey species, each having a different utilization distribution. We then
-simulate the location and size for each individual of each prey species.
-We also imagine that a predator might be sampled at three different
-locations, and that it has recently moved through an area of varied size
-(shown as shaded circles).</p>
-<pre><code><span><span class="co">#&gt; Loading required package: sp</span></span></code></pre>
+prey species, each having a different utilization distribution (shown
+using contours to indicate expected densities). We then simulate a
+single realization from this process, plotting the location and size for
+each individual of each prey species. We also imagine that a predator
+might be sampled at three different locations, and that it has recently
+foraged in areas of varied size, labeled sites A, B, and C (shown as
+shaded circles), where these foraging areas occur in areas with
+different densities of the three prey species.</p>
 <p><img src="Introduction_files/figure-html/unnamed-chunk-2-1.png" width="672"></p>
-<p>For this data-generating process, we can conduct multiple simulations
-to calculate the true distribution of prey proportions that occurred
-within the foraging area for a predator at sites A, B, or C. This will
-sometimes be zero for a given prey (which occurs when no prey individual
-is within that foraging patch), and is otherwise a continuous-valued and
-positive response (arising as the sum of prey size for all prey
-individuals in that area).</p>
-<p>We first plot this distribution for the proportion of each prey at
-each site.</p>
+<p>For this data-generating process, we can simulate multiple replicates
+to sample from the true distribution of prey proportions that occurred
+within those three sites A, B, or C. This will sometimes be zero for a
+given prey (which occurs when no prey individual is within that foraging
+patch), and is otherwise a continuous-valued and positive response
+(arising as the sum of prey size for all prey individuals in that
+area).</p>
+<p>We first plot samples from this true distribution for the proportion
+of each prey at each site, and also calculate the average (expected)
+proportion for each prey at each site.</p>
 <p><img src="Introduction_files/figure-html/unnamed-chunk-3-1.png" width="672"></p>
 <p>Finally, we can approximate that true distribution for prey
 proportions using a generalized linear model with a log-linked Tweedie
-distribution, and converting predictions to a proportion. We will call
-this a <em>multivariate Tweedie</em> distribution. However, we do not
-have a closed-form expression for its moment-generating function, so it
-could instead be interpreted as a “multivariate Tweedie generalized
-estimating equation”.</p>
+distribution, and converting predicted prey densities to a proportion.
+We will call this a <em>multivariate Tweedie</em> distribution. However,
+we do not have a closed-form expression for its moment-generating
+function, so it could instead be interpreted as a “multivariate Tweedie
+generalized estimating equation”.</p>
 <p><img src="Introduction_files/figure-html/unnamed-chunk-4-1.png" width="672"></p>
-<p>We therefore propose to use this log-linked Tweedie GLM to fit diet
-samples and predict prey proportions.</p>
+<p>Given the potential for this multivariate-Tweedie distribution to
+approximate the true distribution for prey proportions (including both
+the proportion of zeros, the distribution for positive values, and the
+mean proportions), we therefore propose to use this log-linked Tweedie
+GLM to fit diet samples and predict resulting prey proportions.</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="example-application-for-tuften-puffins-on-middleton-island">Example application for tuften puffins on Middleton Island<a class="anchor" aria-label="anchor" href="#example-application-for-tuften-puffins-on-middleton-island"></a>
+<h2 id="example-application-for-tufted-puffins-on-middleton-island">Example application for tufted puffins on Middleton Island<a class="anchor" aria-label="anchor" href="#example-application-for-tufted-puffins-on-middleton-island"></a>
 </h2>
-<p>To apply this method, we first format our data as a long-form data
-frame, which includes a row for each combination of prey and sample, and
-columns for prey group and sample ID, the measured quantity in that diet
-sample for each prey, and any predictor and/or offset variables.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<p>So far, we have showed that the multivariate Tweedie distribution can
+approximate the sampling distribution from a double-marked point
+process. We next show how it can be specified as a distribution in a
+multi-class generalized linear model, infer covariate effects, and
+predict prey proportions. To do so, we first format our data as a
+long-form data frame, which includes a row for each combination of prey
+and sample, and columns for prey group and sample ID, the measured
+quantity in that diet sample for each prey, and any predictor and/or
+offset variables.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Loading package</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://james-thorson-noaa.github.io/mvtweedie/" class="external-link">mvtweedie</a></span><span class="op">)</span></span>
 <span></span>
@@ -211,19 +222,19 @@ each stomach;</li>
 <li>a smoothing term <code>s(Year,by=group)</code> that differs among
 prey groups, representing prey switching over time;</li>
 <li>a group-specific intercept <code>0 + group</code> that represents
-expected differences in prey proportion over time</li>
+expected differences in prey proportion on average over time.</li>
 </ol>
 <p>The first term is essentially a “detectability” covariate,
-representing changes in attack and capture rates over time. It could be
-replaced by a fixed or random effect for each sample, although such a
-model is slow using <em>mgcv</em>. It has a equal effect for predicted
-measurements for each prey category (due to us using a log-linked
-model), and therefore “drops out” when predicting prey proportions.
-Alternatively, we could pre-process the data such that each sample has a
-constant mean prey density. This will be (rougly) similar to
-marginalizing across the unmodeled variation in total prey measurement
-for each sample.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+representing changes in attack and capture rates over time that affect
+the sampled value for all prey in a given year. It could be replaced by
+a fixed or random effect for each sample, although such a model is slow
+using <em>mgcv</em>. It has a equal effect for predicted measurements
+for each prey category (due to us using a log-linked model), and
+therefore “drops out” when predicting prey proportions. Alternatively,
+we could pre-process the data such that each sample has a constant mean
+prey density. This will be (roughly) similar to marginalizing across the
+unmodeled variation in total prey measurement for each sample.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Run Tweedie GLM</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">mgcv</span><span class="op">)</span></span>
 <span><span class="va">gam0</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">gam</a></span><span class="op">(</span> formula <span class="op">=</span> <span class="va">Response</span> <span class="op">~</span> <span class="fl">0</span> <span class="op">+</span> <span class="va">group</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/pkg/mgcv/man/s.html" class="external-link">s</a></span><span class="op">(</span><span class="va">Year</span>,by<span class="op">=</span><span class="va">group</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/pkg/mgcv/man/s.html" class="external-link">s</a></span><span class="op">(</span><span class="va">Year</span><span class="op">)</span>,</span>
@@ -247,7 +258,7 @@ for each prey as a function of covariates.</p>
 <p>In this simple example, we can manually construct a predictive grid
 for our covariate <code>Year</code>, calculate predictions, and then
 plot using <em>ggplot</em>.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Predict values</span></span>
 <span><span class="va">newdata</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html" class="external-link">expand.grid</a></span><span class="op">(</span> <span class="st">"group"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">Middleton_Island_TUPU</span><span class="op">$</span><span class="va">group</span><span class="op">)</span>,</span>
 <span>                       <span class="st">"Year"</span> <span class="op">=</span> <span class="fl">1978</span><span class="op">:</span><span class="fl">2018</span> <span class="op">)</span></span>
@@ -273,7 +284,7 @@ plot using <em>ggplot</em>.</p>
 construct a full grid across all covariates. We can instead automate
 this process using third-party packages. Here, we show how to use
 <em>pdp</em> to calculate a partial dependence plot:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/bgreenwell/pdp" class="external-link">pdp</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Make function to interface with pdp</span></span>
@@ -297,7 +308,7 @@ this process using third-party packages. Here, we show how to use
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span> <span class="va"><a href="https://lattice.r-forge.r-project.org/" class="external-link">lattice</a></span> <span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/pdp/man/plotPartial.html" class="external-link">plotPartial</a></span><span class="op">(</span> <span class="va">Partial</span> <span class="op">)</span></span></code></pre></div>
 <p><img src="Introduction_files/figure-html/unnamed-chunk-8-1.png" width="672"></p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># using in ggplot2</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">Partial</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">Year</span>, y<span class="op">=</span><span class="va">yhat</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="co"># , group=yhat.id</span></span>
@@ -311,14 +322,15 @@ not guarunteed to be the case in models with more covariates.</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="spatial-analysis-of-wolf-prey">Spatial analysis of Wolf prey<a class="anchor" aria-label="anchor" href="#spatial-analysis-of-wolf-prey"></a>
+<h2 id="spatial-analysis-of-wolf-prey">Spatial analysis of wolf prey<a class="anchor" aria-label="anchor" href="#spatial-analysis-of-wolf-prey"></a>
 </h2>
 <p>We next demonstrate how the multivariate Tweedie can be used in a
 spatial analysis to predict diet proportions. We use samples of
-environmental DNA from wolf scats collected in southeast Alaska. We
-reduce analysis to four selected prey species to speed up model
-fitting.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+environmental DNA from wolf scats collected in southeast Alaska, and
+restrict analysis to four selected prey species to speed up model
+fitting (the model would likely be faster using software that is
+specialized for multivariate spatio-temporal analysis).</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load data</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">southeast_alaska_wolf</span><span class="op">)</span></span>
 <span><span class="va">groups</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Black tailed deer"</span>,<span class="st">"Marine mammal"</span>, <span class="st">"Mountain goat"</span>, <span class="st">"Beaver"</span><span class="op">)</span></span>
@@ -378,7 +390,7 @@ fitting.</p>
 </table>
 <p>We then fit a generalized additive model with a tensor-spline
 interaction of Latitude and Longitude.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Using mgcv</span></span>
 <span><span class="va">gam_wolf</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">gam</a></span><span class="op">(</span> formula <span class="op">=</span> <span class="va">Response</span> <span class="op">~</span> <span class="fl">0</span> <span class="op">+</span> <span class="va">group</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/pkg/mgcv/man/s.html" class="external-link">s</a></span><span class="op">(</span><span class="va">Latitude</span>,<span class="va">Longitude</span>,m<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">0.5</span><span class="op">)</span>,bs<span class="op">=</span><span class="st">"ds"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>     <span class="fu"><a href="https://rdrr.io/pkg/mgcv/man/s.html" class="external-link">s</a></span><span class="op">(</span><span class="va">Latitude</span>,<span class="va">Longitude</span>,by<span class="op">=</span><span class="va">group</span>,m<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">0.5</span><span class="op">)</span>,bs<span class="op">=</span><span class="st">"ds"</span><span class="op">)</span>,</span>
@@ -387,7 +399,7 @@ interaction of Latitude and Longitude.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">gam_wolf</span><span class="op">)</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span> <span class="st">"mvtweedie"</span>, <span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">gam_wolf</span><span class="op">)</span> <span class="op">)</span></span></code></pre></div>
 <p>Finally, we define a function that computes predictions on a grid
 formed from different values of each predictor:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">predict_grid</span> <span class="op">&lt;-</span></span>
 <span><span class="kw">function</span><span class="op">(</span> <span class="va">model</span>,</span>
 <span>          <span class="va">exclude_terms</span> <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -438,7 +450,7 @@ formed from different values of each predictor:</p>
 <span><span class="op">}</span></span></code></pre></div>
 <p>We use this function to visualize prey proportions across the
 landscape of southeast Alaska that is inhabited by wolves:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rnaturalearth/" class="external-link">rnaturalearth</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/raster" class="external-link">raster</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
@@ -450,7 +462,7 @@ landscape of southeast Alaska that is inhabited by wolves:</p>
 <span><span class="va">pred_wolf</span><span class="op">$</span><span class="va">cv.fit</span> <span class="op">=</span> <span class="va">pred_wolf</span><span class="op">$</span><span class="va">se.fit</span> <span class="op">/</span> <span class="va">pred_wolf</span><span class="op">$</span><span class="va">fit</span></span>
 <span></span>
 <span><span class="co"># Map oceanmap layer</span></span>
-<span><span class="va">US_high</span> <span class="op">=</span> <span class="fu"><a href="https://docs.ropensci.org/rnaturalearth/reference/ne_countries.html" class="external-link">ne_countries</a></span><span class="op">(</span>scale<span class="op">=</span><span class="fl">10</span>, country<span class="op">=</span><span class="st">"united states of america"</span><span class="op">)</span></span>
+<span><span class="va">US_high</span> <span class="op">=</span> <span class="fu"><a href="https://docs.ropensci.org/rnaturalearth/reference/ne_countries.html" class="external-link">ne_countries</a></span><span class="op">(</span>scale<span class="op">=</span><span class="fl">50</span>, country<span class="op">=</span><span class="st">"united states of america"</span><span class="op">)</span></span>
 <span><span class="va">st_box</span> <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st.html" class="external-link">st_polygon</a></span><span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span> x<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">140</span>,<span class="op">-</span><span class="fl">125</span>,<span class="op">-</span><span class="fl">124</span>,<span class="op">-</span><span class="fl">140</span>,<span class="op">-</span><span class="fl">140</span><span class="op">)</span>, </span>
 <span>                                 y<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">50</span>,<span class="fl">50</span>,<span class="fl">60</span>,<span class="fl">60</span>,<span class="fl">50</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">)</span></span>
 <span><span class="va">st_box</span> <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/sfc.html" class="external-link">st_sfc</a></span><span class="op">(</span><span class="va">st_box</span>, crs<span class="op">=</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_crs.html" class="external-link">st_crs</a></span><span class="op">(</span><span class="va">US_high</span><span class="op">)</span> <span class="op">)</span></span>
@@ -462,7 +474,7 @@ landscape of southeast Alaska that is inhabited by wolves:</p>
 <span>                     lon <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">135.1866</span>, <span class="op">-</span><span class="fl">136.0024</span>, <span class="op">-</span><span class="fl">134.5776</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="va">.</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lon"</span>, <span class="st">"lat"</span><span class="op">)</span>, crs <span class="op">=</span> <span class="fl">4326</span><span class="op">)</span> </span>
 <span></span>
-<span><span class="va">mask.land</span> <span class="op">=</span> <span class="fu"><a href="https://docs.ropensci.org/rnaturalearth/reference/ne_countries.html" class="external-link">ne_countries</a></span><span class="op">(</span>scale<span class="op">=</span><span class="fl">10</span>, country<span class="op">=</span><span class="st">"united states of america"</span>, returnclass <span class="op">=</span> <span class="st">'sf'</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="va">mask.land</span> <span class="op">=</span> <span class="fu"><a href="https://docs.ropensci.org/rnaturalearth/reference/ne_countries.html" class="external-link">ne_countries</a></span><span class="op">(</span>scale<span class="op">=</span><span class="fl">50</span>, country<span class="op">=</span><span class="st">"united states of america"</span>, returnclass <span class="op">=</span> <span class="st">'sf'</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_crs.html" class="external-link">st_set_crs</a></span><span class="op">(</span><span class="va">.</span>, <span class="fl">4326</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_cast.html" class="external-link">st_cast</a></span><span class="op">(</span><span class="va">.</span>, <span class="st">"POLYGON"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_join.html" class="external-link">st_join</a></span><span class="op">(</span><span class="va">.</span>, <span class="va">sf.isl</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
@@ -481,6 +493,8 @@ landscape of southeast Alaska that is inhabited by wolves:</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_continuous</a></span><span class="op">(</span>breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">135</span>, <span class="op">-</span><span class="fl">133.5</span>, <span class="op">-</span><span class="fl">132</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>axis.text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">7</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Introduction_files/figure-html/unnamed-chunk-12-1.png" width="672"></p>
+<p>These results visualize spatial prey switching, e.g., a greater
+proportion of marine mammals in wolf diets in islands.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
