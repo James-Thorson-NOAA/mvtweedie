@@ -120,11 +120,6 @@ function( object,
       warning("Converting `origdata` from tibble to data.frame")
       origdata = as.data.frame(origdata)
     }
-    if( family(object)$link != "log" ){
-      stop("`predict.mvtweedie` only implemented for a log link")
-    }
-  }else{
-    stop("`predict.mvtweedie` only implemented for mgcv and glmmTMB")
   }
 
   # Defaults
