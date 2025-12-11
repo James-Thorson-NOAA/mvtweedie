@@ -8,6 +8,7 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
   %\VignetteDepends{ggplot2,mgcv}
+bibliography: 'mvtweedie_vignettes.bib'
 ---
 
 ```{r, include = FALSE}
@@ -551,3 +552,5 @@ ggplot(oceanmap) +
 ``` 
 
 These results visualize spatial prey switching, e.g., a greater proportion of marine mammals in wolf diets in islands.  
+
+# Works cited

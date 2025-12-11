@@ -1,7 +1,11 @@
+# phylosem 1.2.0
+
+* Integrating `tinyVAST`
+* Simplifying interface slightly
+
 # phylosem 1.1.0
 
-* Release on CRAN 
-* Adding package vignette 
+* Adding package vignette
 * Improved documentation
 * Adding spatial example using wolf diet data
 

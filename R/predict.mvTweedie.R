@@ -11,8 +11,9 @@
 #'
 #' \code{predict.mvtweedie} does this transformation for a model fitted using:
 #' \itemize{
-#'   \item A generalized additive model (GAM) using \code{\link[mgcv]{gam} in _mgcv_ }
-#'   \item A generalized linear mixed model (GLMM) using \code{\link[glmmTMB]{glmmTMB} in _glmmTMB_}
+#' \item A generalized additive model (GAM) using \code{\link[mgcv]{gam}}
+#' \item A generalized linear mixed model (GLMM) using \code{\link[glmmTMB]{glmmTMB}}
+#' \item A spatio-temporal generalized linear mixed model (GLMM) using \code{\link[tinyVAST]{tinyVAST}}
 #' }
 #' It then also calculates an approximation to the standard error for this proportion.
 #' Specifically, we calculate the proportion for each category as the density \eqn{X}
@@ -41,7 +42,7 @@
 #'    \code{class(object)=c("mvtweedie",...)} where \code{...} indicates the original values for
 #'    \code{class(object)}
 #' @param category_name name of column that indicates grouping variable
-#' @param origdata original data used when fitting
+#' @param se.fit Whether to approximate the standard errors for predicted proportions
 #'
 #' @examplesIf require("mgcv", quietly = TRUE)
 #' # Load packages
@@ -72,16 +73,52 @@ predict.mvtweedie <-
 function( object,
           category_name = "group",
           newdata,
-          origdata = object$model,
-          se.fit = FALSE,
-          ... )
+          se.fit = FALSE )
 {
   # Error checks
-  #if( any(c("gam","glmmTMB") %in% class(object)) ){
-  if( inherits(object,"gam") | inherits(object,"glmmTMB") ){
-    # mgcv::gam( ..., family=tw) has e.g., `family(object) = "Tweedie(p=1.44)"`
-    if( !grepl("tweedie", tolower(family(object)$family)) ){
-      warning("`predict.mvtweedie` only intended for a Tweedie distribution")
+  if( inherits(object,"gam") ){
+    if( tolower(substr(family(object)$family,1,7)) != "tweedie" ){
+      warning("`predict.mvtweedie` originally described for a Tweedie distribution")
+    }
+    if( family(object)$link != "log" ){
+      stop("`predict.mvtweedie` only implemented for a log link")
+    }
+    #if( missing(origdata) ){
+      origdata = model.frame(object)
+    #}
+  }else if( inherits(object,"glmmTMB") ){
+    if( tolower(substr(family(object)$family,1,7)) != "tweedie" ){
+      warning("`predict.mvtweedie` originally described for a Tweedie distribution")
+    }
+    if( family(object)$link != "log" ){
+      stop("`predict.mvtweedie` only implemented for a log link")
+    }
+    #if( missing(origdata) ){
+      origdata = model.frame(object)
+    #}
+  }else if( inherits(object,"fit_model") ){
+    if( se.fit==TRUE ){
+      error("se.fit not implemented for predict using VAST")
+    }
+  }else if( inherits(object,"tinyVAST") ){
+    if( !all(sapply(object$internal$family, FUN = \(y)y$family) == "tweedie") ){
+      warning("`predict.mvtweedie` originally described for a Tweedie distribution")
+    }
+    if( !all(sapply(object$internal$family, FUN = \(y)y$link) == "log") ){
+      stop("`predict.mvtweedie` only implemented for a log link")
+    }
+    #if( missing(origdata) ){
+      origdata = object$data
+    #}
+  }else{
+    stop("`predict.mvtweedie` only implemented for mgcv, glmmTMB, tinyVAST, and VAST")
+  }
+
+  # Check and account for tibbles
+  if( "package:tibble" %in% search() ){
+    if( is_tibble(origdata) ){
+      warning("Converting `origdata` from tibble to data.frame")
+      origdata = as.data.frame(origdata)
     }
     if( family(object)$link != "log" ){
       stop("`predict.mvtweedie` only implemented for a log link")
@@ -91,7 +128,9 @@ function( object,
   }
 
   # Defaults
-  if(missing(newdata) || is.null(newdata)) newdata = origdata
+  if(missing(newdata) || is.null(newdata)){
+    newdata = origdata
+  }
 
   # Predict each observation for each class
   se_pred_ic = pred_ic = array(NA, dim=c(nrow(newdata),nlevels(origdata[,category_name])))
@@ -99,36 +138,57 @@ function( object,
 
     # Modify data
     data = newdata
-    data[,category_name] = factor( levels(origdata[,category_name])[cI], levels=levels(origdata[,category_name]) )
+    data[,category_name] = factor(
+      levels(origdata[,category_name])[cI],
+      levels = levels(origdata[,category_name])
+    )
 
     # Modify class
     class(object) = setdiff( class(object), "mvtweedie" )
     #class(object) = original_class
 
     # Apply predict.original_class
-    pred = predict(object,
-                 newdata = data,
-                 type="response",
-                 se.fit = se.fit )
-    if( isTRUE(se.fit) ){
-      pred_ic[,cI] = pred$fit
-      se_pred_ic[,cI] = pred$se.fit
+    if( "fit_model" %in% class(object) ){
+      # if using VAST
+      pred_ic[,cI] = predict(object,
+        what = "D_i",
+        Lat_i = object$data_frame[,'Lat_i'],
+        Lon_i = object$data_frame[,'Lon_i'],
+        t_i = object$data_frame[,'t_i'],
+        a_i = object$data_frame[,'a_i'],
+        c_iz = rep(cI-1,nrow(object$data_frame)),
+        v_i = object$data_frame[,'v_i']
+      )
     }else{
-      pred_ic[,cI] = pred
+      pred = predict(
+        object,
+        newdata = data,
+        type = "response",
+        se.fit = se.fit
+      )
+      if( se.fit==TRUE ){
+        pred_ic[,cI] = pred$fit
+        se_pred_ic[,cI] = pred$se.fit
+      }else{
+        pred_ic[,cI] = pred
+      }
     }
   }
 
-  # Normalize probability for each observation and class
+  # Normalize probability for each observation and class ... uses `rowsum_pred_ic` again below
   rowsum_pred_ic = outer( rowSums(pred_ic), rep(1,ncol(pred_ic)) )
   prob_ic = pred_ic / rowsum_pred_ic
-  prob_i = prob_ic[ cbind(1:nrow(pred_ic), match(newdata[,category_name],levels(origdata[,category_name]))) ]
+
+  # Extract relevant column
+  index_table = cbind(1:nrow(pred_ic), match(newdata[,category_name],levels(origdata[,category_name])))
+  prob_i = prob_ic[index_table]
 
   # return prediction
   if( isTRUE(se.fit) ){
     # Normalize SE-squared for each observation and class
     rowsum_se2_ic = outer( rowSums(se_pred_ic^2), rep(1,ncol(pred_ic)) )
     se2_prob_ic = prob_ic^2 * ( se_pred_ic^2/pred_ic^2 - 2*se_pred_ic^2/(pred_ic*rowsum_pred_ic) + rowsum_se2_ic/rowsum_pred_ic^2 )
-    se_i = sqrt(se2_prob_ic[ cbind(1:nrow(se2_prob_ic), match(newdata[,category_name],levels(origdata[,category_name]))) ])
+    se_i = sqrt( se2_prob_ic[index_table] )
     out = list("fit"=prob_i, "se.fit"=se_i)
   }else{
     out = prob_i
