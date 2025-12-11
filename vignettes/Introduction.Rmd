@@ -332,7 +332,8 @@ library(mvtweedie)
 
 # load data set
 data( Middleton_Island_TUPU, package="mvtweedie" )
-Middleton_Island_TUPU$Year = as.numeric(as.character( Middleton_Island_TUPU$Year_factor ))
+Middleton_Island_TUPU$Year =
+  as.numeric(as.character( Middleton_Island_TUPU$Year_factor ))
 
 # Illustrate format
 knitr::kable( head(Middleton_Island_TUPU), digits=1, row.names=FALSE)
@@ -349,9 +350,11 @@ The first term is essentially a "detectability" covariate, representing changes 
 ```{r, eval=TRUE, echo=TRUE, message=FALSE, fig.width=6, fig.height=6, out.width = "75%"}
 # Run Tweedie GLM
 library(mgcv)
-gam0 = gam( formula = Response ~ 0 + group + s(Year,by=group) + s(Year),
-                  data = Middleton_Island_TUPU,
-                  family = tw )
+gam0 = gam(
+  formula = Response ~ 0 + group + s(Year,by=group) + s(Year),
+  data = Middleton_Island_TUPU,
+  family = tw
+)
 
 # Load class to enable predict.mvtweedie
 mygam = gam0
@@ -368,12 +371,15 @@ In this simple example, we can manually construct a predictive grid for our cova
 
 ```{r, eval=TRUE, echo=TRUE, message=FALSE, fig.width=fig_width, fig.height=fig_width, warning=FALSE}
 # Predict values
-newdata = expand.grid( "group" = levels(Middleton_Island_TUPU$group),
-                       "Year" = 1978:2018 )
-pred = predict( mygam,
-                se.fit = TRUE,
-                origdata = Middleton_Island_TUPU,
-                newdata = newdata )
+newdata = expand.grid( 
+  "group" = levels(Middleton_Island_TUPU$group),
+  "Year" = 1978:2018 
+)
+pred = predict( 
+  mygam,
+  se.fit = TRUE,
+  newdata = newdata 
+)
 newdata = cbind( newdata, fit=pred$fit, se.fit=pred$se.fit )
 newdata$lower = newdata$fit - newdata$se.fit
 newdata$upper = newdata$fit + newdata$se.fit
@@ -396,7 +402,6 @@ library(pdp)
 # Make function to interface with pdp
 pred.fun = function( object, newdata ){
   predict( object = object,
-           origdata = object$model,
            category_name = "group",
            newdata = newdata )
 }
@@ -404,11 +409,13 @@ pred.fun = function( object, newdata ){
 # Calculate partial dependence
 # approx = TRUE gives effects for average of other covariates
 # approx = FALSE gives each pdp curve
-Partial = partial( object = mygam,
-                   pred.var = c( "Year", "group"),
-                   pred.fun = pred.fun,
-                   train = mygam$model,
-                   approx = TRUE )
+Partial = partial(
+  object = mygam,
+  pred.var = c( "Year", "group"),
+  pred.fun = pred.fun,
+  train = mygam$model,
+  approx = TRUE
+)
 
 # Lattice plots as default option
 library( lattice )
@@ -497,7 +504,6 @@ function( model,
   pred <- predict( model,
                    newdata = new_data,
                    se.fit = TRUE,
-                   #original_class = c("gam","glm","lm"),
                    ...)
   predicted <- as.data.frame(pred)
   predictions <- cbind(new_data, predicted)
@@ -512,9 +518,9 @@ library(rnaturalearth)
 library(raster)
 library(sf)
 library(dplyr)
+
 # Predict raster on map
 pred_wolf = predict_grid( gam_wolf,
-                 origdata = southeast_alaska_wolf,
                  length_out = 100 )
 pred_wolf$cv.fit = pred_wolf$se.fit / pred_wolf$fit
 
