@@ -43,6 +43,7 @@
 #'    \code{class(object)}
 #' @param category_name name of column that indicates grouping variable
 #' @param se.fit Whether to approximate the standard errors for predicted proportions
+#' @param ... Not used
 #'
 #' @examplesIf require("mgcv", quietly = TRUE)
 #' # Load packages
@@ -53,19 +54,25 @@
 #' data( Middleton_Island_TUPU, package="mvtweedie" )
 #'
 #' # Run Tweedie GLM
-#' gam0 = gam( formula = Response ~ 0 + group, 
-#'             data = Middleton_Island_TUPU, 
-#'             family = tw )
+#' gam0 = gam(
+#'   formula = Response ~ 0 + group,
+#'   data = Middleton_Island_TUPU,
+#'   family = tw
+#' )
 #'
 #' # Inspect results
 #' class(gam0) = c( "mvtweedie", class(gam0) )
-#' predict( gam0, 
-#'          se.fit = TRUE, 
-#'          origdata = Middleton_Island_TUPU)
+#' predict(
+#'   gam0,
+#'   se.fit = TRUE
+#' )
 #'
 #' @return
 #' predict.mvtweedie produces a vector of predicted proportions or a list containing 
 #' predicted proportions and standard errors.
+#'
+#' @importFrom stats model.frame
+#' @importFrom tibble is_tibble
 #'
 #' @method predict mvtweedie
 #' @export
@@ -73,7 +80,8 @@ predict.mvtweedie <-
 function( object,
           category_name = "group",
           newdata,
-          se.fit = FALSE )
+          se.fit = FALSE,
+          ... )
 {
   # Error checks
   if( inherits(object,"gam") ){
@@ -98,7 +106,7 @@ function( object,
     #}
   }else if( inherits(object,"fit_model") ){
     if( se.fit==TRUE ){
-      error("se.fit not implemented for predict using VAST")
+      stop("se.fit not implemented for predict using VAST")
     }
   }else if( inherits(object,"tinyVAST") ){
     if( !all(sapply(object$internal$family, FUN = \(y)y$family) == "tweedie") ){

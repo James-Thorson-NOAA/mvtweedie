@@ -2,4 +2,6 @@
 
 S3method(predict,mvtweedie)
 importFrom(stats,family)
+importFrom(stats,model.frame)
 importFrom(stats,predict)
+importFrom(tibble,is_tibble)

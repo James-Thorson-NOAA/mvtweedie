@@ -4,14 +4,7 @@
 \alias{predict.mvtweedie}
 \title{Predict proportions for new data}
 \usage{
-\method{predict}{mvtweedie}(
-  object,
-  category_name = "group",
-  newdata,
-  origdata = object$model,
-  se.fit = FALSE,
-  ...
-)
+\method{predict}{mvtweedie}(object, category_name = "group", newdata, se.fit = FALSE, ...)
 }
 \arguments{
 \item{object}{output from \code{\link[mgcv]{gam}} or \code{\link[glmmTMB]{glmmTMB}}, but with
@@ -23,11 +16,9 @@
 \item{newdata}{An optional data frame in which to look for variables with
     which to predict.  If omitted, the fitted values are used.}
 
-\item{origdata}{original data used when fitting}
+\item{se.fit}{Whether to approximate the standard errors for predicted proportions}
 
-\item{se.fit}{A switch indicating if standard errors are required.}
-
-\item{...}{further arguments passed to or from other methods.}
+\item{...}{Not used}
 }
 \value{
 predict.mvtweedie produces a vector of predicted proportions or a list containing
@@ -44,8 +35,9 @@ point process for diet samples, with marks for category and size.
 
 \code{predict.mvtweedie} does this transformation for a model fitted using:
 \itemize{
-\item A generalized additive model (GAM) using \code{\link[mgcv]{gam} in _mgcv_ }
-\item A generalized linear mixed model (GLMM) using \code{\link[glmmTMB]{glmmTMB} in _glmmTMB_}
+\item A generalized additive model (GAM) using \code{\link[mgcv]{gam}}
+\item A generalized linear mixed model (GLMM) using \code{\link[glmmTMB]{glmmTMB}}
+\item A spatio-temporal generalized linear mixed model (GLMM) using \code{\link[tinyVAST]{tinyVAST}}
 }
 It then also calculates an approximation to the standard error for this proportion.
 Specifically, we calculate the proportion for each category as the density \eqn{X}
@@ -68,7 +60,7 @@ are then supplied by the \code{predict} function that is native to the software
 used when fitting the model.
 }
 \examples{
-\dontshow{if (require("mgcv", quietly = TRUE)) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (require("mgcv", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # Load packages
 library(mvtweedie)
 library(mgcv)
@@ -77,14 +69,17 @@ library(mgcv)
 data( Middleton_Island_TUPU, package="mvtweedie" )
 
 # Run Tweedie GLM
-gam0 = gam( formula = Response ~ 0 + group, 
-            data = Middleton_Island_TUPU, 
-            family = tw )
+gam0 = gam(
+  formula = Response ~ 0 + group,
+  data = Middleton_Island_TUPU,
+  family = tw
+)
 
 # Inspect results
 class(gam0) = c( "mvtweedie", class(gam0) )
-predict( gam0, 
-         se.fit = TRUE, 
-         origdata = Middleton_Island_TUPU)
+predict(
+  gam0,
+  se.fit = TRUE
+)
 \dontshow{\}) # examplesIf}
 }

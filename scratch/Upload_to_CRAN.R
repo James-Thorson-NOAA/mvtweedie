@@ -1,6 +1,6 @@
 
 library(devtools)
-setwd( R'(C:\Users\James.Thorson\Desktop\Git\mvtweedie)' )
+setwd( R'(C:\Users\james\OneDrive\Desktop\Git\mvtweedie)' )
 
 # Compile
 if( FALSE ){
@@ -9,8 +9,7 @@ if( FALSE ){
 
 # Test install
 install_local(force=TRUE, dep=TRUE, build_vignettes=TRUE, upgrade=FALSE)
-#install_local(force=TRUE, dep=TRUE, build_vignettes=FALSE, upgrade=FALSE)
-browseVignettes("phylosem")
+browseVignettes("mvtweedie")
 
 #
 if( FALSE ){
