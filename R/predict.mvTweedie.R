@@ -122,6 +122,7 @@ function( object,
     stop("`predict.mvtweedie` only implemented for mgcv, glmmTMB, tinyVAST, and VAST")
   }
 
+
   # Check and account for tibbles
   if( "package:tibble" %in% search() ){
     if( is_tibble(origdata) ){
@@ -130,20 +131,29 @@ function( object,
     }
   }
 
+  #
+  if( is.factor(origdata[,category_name]) ){
+    category_set = levels(origdata[,category_name])
+  }else if( is.character(origdata[,category_name]) ){
+    category_set = unique(origdata[,category_name])
+  }else{
+    stop("`origdata[,category_name]` should be a factor of character-vector")
+  }
+
   # Defaults
   if(missing(newdata) || is.null(newdata)){
     newdata = origdata
   }
 
   # Predict each observation for each class
-  se_pred_ic = pred_ic = array(NA, dim=c(nrow(newdata),nlevels(origdata[,category_name])))
+  se_pred_ic = pred_ic = array(NA, dim=c(nrow(newdata),length(category_set)))
   for(cI in 1:ncol(pred_ic)){
 
     # Modify data
     data = newdata
     data[,category_name] = factor(
-      levels(origdata[,category_name])[cI],
-      levels = levels(origdata[,category_name])
+      category_set[cI],
+      levels = category_set
     )
 
     # Modify class
@@ -183,7 +193,7 @@ function( object,
   prob_ic = pred_ic / rowsum_pred_ic
 
   # Extract relevant column
-  index_table = cbind(1:nrow(pred_ic), match(newdata[,category_name],levels(origdata[,category_name])))
+  index_table = cbind(1:nrow(pred_ic), match(newdata[,category_name],category_set))
   prob_i = prob_ic[index_table]
 
   # return prediction
