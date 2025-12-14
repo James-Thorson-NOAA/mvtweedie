@@ -438,8 +438,10 @@ We next demonstrate how the multivariate Tweedie can be used in a spatial analys
 # Load data
 data(southeast_alaska_wolf)
 groups = c("Black tailed deer","Marine mammal", "Mountain goat", "Beaver")
-southeast_alaska_wolf = subset( southeast_alaska_wolf,
-                                group %in% groups )
+southeast_alaska_wolf = subset(
+  southeast_alaska_wolf,
+  group %in% groups 
+)
 
 # 
 southeast_alaska_wolf$group = factor(southeast_alaska_wolf$group)
@@ -451,11 +453,19 @@ knitr::kable( head(southeast_alaska_wolf), digits=1, row.names=FALSE)
 We then fit a generalized additive model with a tensor-spline interaction of Latitude and Longitude.
 
 ```{r, eval=TRUE, echo=TRUE, message=FALSE, fig.width=fig_width, fig.height=fig_width, out.width = "75%", warning=FALSE}
+# Formula
+Formula = Response ~ 
+  0 + group + 
+  s(Latitude,Longitude,m=c(1,0.5),bs="ds") +
+  s(Latitude,Longitude,by=group,m=c(1,0.5),bs="ds")
+
+
 # Using mgcv
-gam_wolf = gam( formula = Response ~ 0 + group + s(Latitude,Longitude,m=c(1,0.5),bs="ds") +
-     s(Latitude,Longitude,by=group,m=c(1,0.5),bs="ds"),
+gam_wolf = gam(
+  formula = Formula,
   data = southeast_alaska_wolf,
-  family = tw )
+  family = tw 
+)
 class(gam_wolf) = c( "mvtweedie", class(gam_wolf) )
 ```
 
