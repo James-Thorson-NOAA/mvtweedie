@@ -12,8 +12,8 @@ Authors@R:
     )
 Description: Defines predict function that transforms output from a Tweedie
     Generalized Linear Mixed Model (using 'glmmTMB'),
-    Generalized Additive Model (using `mgcv`), or
-    spatio-temporal Generalized Linear Mixed Model (using package `tinyVAST`),
+    Generalized Additive Model (using 'mgcv'), or
+    spatio-temporal Generalized Linear Mixed Model (using package 'tinyVAST'),
     and returns predicted proportions (and standard errors) across a
     grouping variable from an equivalent multivariate-logit Tweedie model.
     These predicted proportions can then be used for standard plotting
