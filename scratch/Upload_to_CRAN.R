@@ -1,6 +1,6 @@
 
 library(devtools)
-setwd( R'(C:\Users\james\OneDrive\Desktop\Git\mvtweedie)' )
+setwd( R'(C:\Users\James.Thorson\Desktop\Git\mvtweedie)' )
 
 # Compile
 if( FALSE ){

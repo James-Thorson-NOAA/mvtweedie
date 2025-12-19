@@ -2,7 +2,7 @@ Package: mvtweedie
 Type: Package
 Title: Estimate Diet Proportions Using Multivariate Tweedie Model
 Version: 1.2.0
-Date: 2025-12-11
+Date: 2025-12-19
 Authors@R: 
     c(person(given = "James",
              family = "Thorson",
@@ -10,10 +10,14 @@ Authors@R:
              email = "James.Thorson@noaa.gov",
              comment = c(ORCID = "0000-0001-7415-1010"))
     )
-Description: Defines predict function that transforms output from a Tweedie GLM 
-    fitted using 'mgcv', 'glmmTMB', or 'tinyVAST', and returns predictions of an equivalent 
-    multivariate-logit Tweedie model.  This can then be used for standard plotting
-    and diagnostics.  See Thorson et al. 2022 <doi:10.1002/ecy.3637>.   
+Description: Defines predict function that transforms output from a Tweedie
+    Generalized Linear Mixed Model (using 'glmmTMB'),
+    Generalized Additive Model (using `mgcv`), or
+    spatio-temporal Generalized Linear Mixed Model (using package `tinyVAST`),
+    and returns predicted proportions (and standard errors) across a
+    grouping variable from an equivalent multivariate-logit Tweedie model.
+    These predicted proportions can then be used for standard plotting
+    and diagnostics.  See Thorson et al. 2022 <doi:10.1002/ecy.3637>.
 Imports:
     stats,
     tibble

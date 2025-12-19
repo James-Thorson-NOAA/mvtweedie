@@ -20,6 +20,7 @@ knitr::opts_chunk$set(
 )
 fig_width = 7
 fig_height = 7/3
+origpar = par()
 # Install locally
 #  devtools::install_local( R'(C:\Users\James.Thorson\Desktop\Git\mvtweedie)', force=TRUE )
 # Build and PDF
@@ -568,5 +569,9 @@ ggplot(oceanmap) +
 ``` 
 
 These results visualize spatial prey switching, e.g., a greater proportion of marine mammals in wolf diets in islands.  
+
+```{r, include = FALSE}
+par(origpar)
+```
 
 # Works cited
