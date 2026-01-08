@@ -1,6 +1,9 @@
 # mvtweedie
 [![DOI](https://zenodo.org/badge/341673481.svg)](https://zenodo.org/badge/latestdoi/341673481)
 [![Documentation](https://img.shields.io/badge/documentation-mvtweedie-orange.svg?colorB=E91E63)](https://james-thorson-noaa.github.io/mvtweedie/)
+[![](https://www.r-pkg.org/badges/version/mvtweedie)](https://cran.r-project.org/package=mvtweedie)
+[![](https://cranlogs.r-pkg.org/badges/mvtweedie)](https://cran.r-project.org/package=mvtweedie)
+[![](https://cranlogs.r-pkg.org/badges/grand-total/mvtweedie)](https://cran.r-project.org/package=mvtweedie)
 
 An R package to interpret a Tweedie generalized linear model (GLM) or generalized additive model (GAM) involving multiple classes as an estimate of proportions for each class, implicitly involving a multivariate-logit transformation for parameters and predictions.  This approach generalizes the Poisson-to-multinomial transformation to allow for non-integer responses, and can analyze either pre-processed (transformed to proportions) or raw (zero-inflated positive real values) data.
 
