@@ -1,0 +1,11 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.github$
+^cran-comments\.md$
+^CRAN-SUBMISSION$
+^data-raw$
+^scratch$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+mvtweedie-manual.tex

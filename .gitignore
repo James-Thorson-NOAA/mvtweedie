@@ -1,0 +1,3 @@
+# use dir/file to exclude file in directory
+docs
+*.tar.gz
